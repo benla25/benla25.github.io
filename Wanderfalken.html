@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wanderfalken</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Ubuntu", "Cantarell", sans-serif;
+            color: #ffffff;
+            background-color: #050505;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+            user-select: none;
+        }
+        .iframe-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 0px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        iframe {
+            border: 3px solid #050505;
+            width: 650px;
+            height: 365.625px;
+            border-radius: 10px;
+            transition: border 0.3s;
+            cursor: default;
+        }
+        iframe:hover {
+            border: 3px solid #333333;
+        }
+        .button-container {
+            position: relative;
+            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0px;
+            flex-direction: row;
+            background-color: #111111;
+            padding: 5px;
+            border-radius: 15px;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+            box-shadow: inset 0px 4px 4px rgba(2, 2, 2, 0.5);
+            z-index: 0;
+        }
+        .button {
+            font-size: 16px;
+            color: #ffffff;
+            background-color: #00000000;
+            border: 0;
+            border-radius: 10px;
+            cursor: default;
+            width: 265px;
+            height: 65px;
+            font-family: "Roboto", sans-serif;
+            text-align: center;
+            transition: background-color 0.3s, color 0.3s;
+            z-index: 2;
+        }
+        .button.active {
+            color: #ffffff;
+        }
+        .button:hover {
+            color: #eeeeee;
+        }
+        .countdown {
+            font-size: 16px;
+            margin-top: 20px;
+            color: #666666;
+        }
+        .monospace {
+            font-family: "Roboto Mono", monospace;
+        }
+        .glide-button {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 265px;
+            height: 65px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            z-index: 0;
+            pointer-events: none !important;
+            user-select: none;
+        }
+        .glide-button.animate {
+            transition: top 0.3s ease, left 0.3s ease;
+        }
+        @media screen and (max-width: 900px) {
+            .button-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Wanderfalken</h1>
+    <div id="iframe-container" class="iframe-container"></div>
+    <div class="button-container" id="button-container">
+        <div class="glide-button" id="glide-button"></div>
+        <button class="button" id="innen-aussen-btn" onclick="showIframe('innen_und_aussen', 'innen-aussen-btn')">Innen- und Außenraum</button>
+        <button class="button" id="innen-btn" onclick="showIframe('innen', 'innen-btn')">Innenraum</button>
+        <button class="button" id="aussen-btn" onclick="showIframe('aussen', 'aussen-btn')">Außenraum</button>
+    </div>
+    <p class="countdown" id="countdown-timer"></p>
+    <script>
+        const iframes = {
+            aussen: `<iframe src="https://v.angelcam.com/iframe?v=xblmn15jr2&autoplay=1&mute=1" webkitallowfullscreen="true" mozallowfullscreen="true" allowfullscreen="true"></iframe>`,
+            innen: `<iframe src="https://v.angelcam.com/iframe?v=oxrnpd7gl8&autoplay=1&mute=1" webkitallowfullscreen="true" mozallowfullscreen="true" allowfullscreen="true"></iframe>`,
+            innen_und_aussen: `
+                <iframe src="https://v.angelcam.com/iframe?v=oxrnpd7gl8&autoplay=1&mute=1" webkitallowfullscreen="true" mozallowfullscreen="true" allowfullscreen="true"></iframe>
+                <iframe src="https://v.angelcam.com/iframe?v=xblmn15jr2&autoplay=1&mute=1" webkitallowfullscreen="true" mozallowfullscreen="true" allowfullscreen="true"></iframe>
+            `
+        };
+
+        const titles = {
+            aussen: "Außenraum • Wanderfalken",
+            innen: "Innenraum • Wanderfalken",
+            innen_und_aussen: "Innen- und Außenraum • Wanderfalken"
+        };
+
+        function moveGlideButton(activeButtonId, animate = false) {
+            const glideButton = document.getElementById('glide-button');
+            const activeButton = document.getElementById(activeButtonId);
+            if (activeButton) {
+                const buttonContainer = document.getElementById('button-container');
+                const buttonRect = activeButton.getBoundingClientRect();
+                const containerRect = buttonContainer.getBoundingClientRect();
+                if (animate) {
+                    glideButton.classList.add('animate');
+                } else {
+                    glideButton.classList.remove('animate');
+                }
+                glideButton.style.top = `${buttonRect.top - containerRect.top}px`;
+                glideButton.style.left = `${buttonRect.left - containerRect.left}px`;
+                const buttons = document.querySelectorAll('.button');
+            }
+        }
+
+        function showIframe(type, activeButtonId) {
+            const container = document.getElementById('iframe-container');
+            container.style.transition = 'opacity 0.3s';
+            container.style.opacity = 0;
+            setTimeout(() => {
+                container.innerHTML = iframes[type];
+                document.title = titles[type];
+                moveGlideButton(activeButtonId, true);
+                setTimeout(() => container.style.opacity = 1, 1000);
+            }, 300);
+            localStorage.setItem('activeIframe', type);
+            localStorage.setItem('activeButtonId', activeButtonId);
+        }
+
+        function handleLayoutChange() {
+            const savedButtonId = localStorage.getItem('activeButtonId') || 'innen-aussen-btn';
+            moveGlideButton(savedButtonId, false);
+        }
+
+        window.onload = function() {
+            const savedIframe = localStorage.getItem('activeIframe') || 'innen_und_aussen';
+            const savedButtonId = localStorage.getItem('activeButtonId') || 'innen-aussen-btn';
+            showIframe(savedIframe, savedButtonId);
+            moveGlideButton(savedButtonId, false);
+            startCountdown(600);
+            window.addEventListener('resize', handleLayoutChange);
+
+            document.querySelectorAll('.button').forEach(button => {
+                button.addEventListener('mouseover', () => {
+                    if (!button.classList.contains('active')) {
+                        button.style.color = '#ffffff';
+                    }
+                });
+                button.addEventListener('mouseout', () => {
+                    if (!button.classList.contains('active')) {
+                        button.style.color = '#aaaaaa';
+                    } else {
+						button.style.color = '#ffffff';
+					}
+                });
+            });
+        };
+
+        function startCountdown(duration) {
+            const timerElement = document.getElementById('countdown-timer');
+            let remainingTime = duration;
+            const interval = setInterval(() => {
+                const minutes = Math.floor(remainingTime / 60);
+                const seconds = remainingTime % 60;
+                timerElement.innerHTML = `Lade neu in: <span class="monospace">${String(minutes).padStart(2, "0")}</span>:<span class="monospace">${String(seconds).padStart(2, "0")}</span><br>Dies muss gemacht werden, um die Webcams zu aktualisieren, falls der Stream nicht richtig übertragen wird.`;
+                if (remainingTime > 0) {
+                    remainingTime -= 1;
+                } else {
+                    clearInterval(interval);
+                    location.reload();
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
+

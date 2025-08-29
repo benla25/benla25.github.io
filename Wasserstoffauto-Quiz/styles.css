@@ -1,0 +1,64 @@
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Ubuntu", "Cantarell", sans-serif;
+    background-color: #181818;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+	color: white;
+}
+
+#quiz-container {
+    margin: 50px auto;
+    padding: 20px;
+    max-width: 500px;
+    background-color: #222222;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 20);
+}
+
+#question {
+    font-size: 20px;
+    margin-bottom: 20px;
+}
+
+.answer {
+    display: block;
+	width: 450px;
+    margin: 10px;
+	height: 50px;
+    padding: 10px 20px;
+    border: 2px solid #aaaaaa;
+    background-color: transparent;
+    color: white;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: default;
+    transition: background-color 0.5s, border 0.5s, color 0.5s;
+}
+
+.answer:hover {
+    background-color: #66666633;
+}
+
+.answer.correct {
+    border: 2px solid #00ff00;
+    color: #00ff00;
+	background-color: #33663333;
+}
+
+.answer.wrong {
+    border: 2px solid #ff0000;
+    color: #ff0000;
+	background-color: #66333333;
+}
+
+#score, #timer, #correctSelections {
+    margin: 10px;
+    font-size: 18px;
+}
+
+#info {
+    margin: 10px;
+    font-size: 6px;
+	color: #aaaaaa;
+}

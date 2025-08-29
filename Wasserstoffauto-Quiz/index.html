@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wasserstoff-Quiz</title>
+	<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="quiz-container">
+        <h1 id="question">Frage lädt...</h1>
+        <button class="answer" onclick="checkAnswer(0)">Antwort 1</button>
+        <button class="answer" onclick="checkAnswer(1)">Antwort 2</button>
+        <button class="answer" onclick="checkAnswer(2)">Antwort 3</button>
+        <button class="answer" onclick="checkAnswer(3)">Antwort 4</button>
+        <p id="score">Punktzahl: 0</p>
+        <p id="timer">Zeit: 60</p>
+		<p id="correctSelections">Korrekt: 0</p>
+		<p id="info">BeFast - Quiz by Ben Lange<br>Je schneller du bist, desto mehr Punkte kriegst du!</p>
+    </div>
+	<script src="script.js"></script>
+</body>
+</html>

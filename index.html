@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="de">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Meine Websites</title>
+		<style>
+			body {
+				font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Ubuntu", "Cantarell", sans-serif;
+				font-size: 15px;
+				user-select: none;
+				text-align: center;
+				font-weight: normal;
+				background-color: var(--background);
+				color: var(--text-color);
+				overflow: auto;
+				align-items: center;
+			}
+			.headline {
+				font-size: 30px;
+				color: var(--headline-color);
+			}
+			.button {
+				font-size: 16px;
+				border: 0px;
+				border-radius: 50px;
+				cursor: default;
+				width: 400px;
+				height: 65px;
+				font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Ubuntu", "Cantarell", sans-serif;
+				text-align: center;
+				user-select: none;
+				background-color: #2222ff;
+				color: #ffffff;
+			}
+			.new-button {
+				font-size: 16px;
+				border-radius: 50px;
+				cursor: default;
+				width: 400px;
+				height: 65px;
+				font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Ubuntu", "Cantarell", sans-serif;
+				text-align: center;
+				user-select: none;
+				background-color: #2222ff;
+				color: var(--button-text-color);
+				border: 1px solid red;
+			}
+			.new-div {
+				position: relative;
+				gap: 10px;
+			}
+			.new-span {
+				position: absolute; 
+				top: -12px; 
+				background: red; 
+				color: white; 
+				padding: 5px; 
+				font-size: 12px;  
+				border-radius: 20px;
+			}
+			@media (prefers-color-scheme: dark) {
+				:root {
+					--background: #11111a;
+					--text-color: #ffffff;
+					--headline-color: #ffffff;
+				}
+			}
+			@media (prefers-color-scheme: light) {
+				:root {
+					--background: #eeeef6;
+					--text-color: #000000;
+					--headline-color: #2222ff;
+				}
+			}
+			::-webkit-scrollbar {
+				width: 4px;
+				height: 4px;
+			}
+			::-webkit-scrollbar-track {
+				background: transparent;
+			}
+			::-webkit-scrollbar-thumb {
+				background: #2222ff;
+				border-radius: 10px;
+			}
+			html {
+				scrollbar-color: #2222ff transparent;
+			}
+			meta[name="theme-color"] {
+				content: #2222ff;
+			}
+			meta[name="apple-mobile-web-app-status-bar-style"] {
+				content: #2222ff;
+			}
+		</style>
+	</head>
+	<body>
+		<p class="headline">Meine Websites</p>
+		<a href="https://ben5594.github.io/Ben%20Lange%20auf%20Spotify" target="_blank">
+			<button class="button"><b>Ben Lange auf Spotify</b><br>Meine Playlists und Lieblingskünstler</button>
+		</a>
+		<br><br>
+		<a href="https://ben5594.github.io/Clicker" target="_blank">
+			<button class="button"><b>Clicker</b></button>
+		</a>
+		<br><br>
+		<a href="https://ben5594.github.io/Wanderfalken" target="_blank">
+			<button class="button"><b>Wanderfalken</b><br>Die Wanderfalken-Webcams in Nürnberg</button>
+		</a>
+		<br><br>
+		<a href="https://ben5594.github.io/10000" target="_blank">
+			<button class="button"><b>Würfeln alias 10.000</b></button>
+		</a>
+		<br><br>
+		<a href="https://ben5594.github.io/Stoppuhr" target="_blank">
+			<button class="button"><b>Stoppuhr mit Glocke</b></button>
+		</a>
+		<br><br>
+		<a href="https://ben5594.github.io/Lautstärkewarner" target="_blank">
+			<button class="button"><b>Lautstärkewarner</b></button>
+		</a>
+		<br><br>
+		<a href="https://ben5594.github.io/ID-Gen" target="_blank">
+			<button class="button"><b>ID-Generator</b></button>
+		</a>
+		<br><br>
+		<a href="https://ben5594.github.io/Uhr" target="_blank">
+			<button class="button"><b>Uhr</b><br>(kann Bugs haben)</button>
+		</a>
+	</body>
+</html>
+
+

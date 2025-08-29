@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Clicker by Ben Lange</title>
+	<style>
+		body {
+			font-family: "Cascadia Code", Cascadia Code, monospace;
+			background-color: #111111;
+			color: #ffffff;
+			user-select: none;
+			text-align: center;
+		}
+		.custom-button, .shop-button, .reset-button {
+			padding: 10px 10px;
+			font-size: 16px;
+			color: white;
+			background-color: transparent;
+			border: 2px solid #ffffff;
+			border-radius: 15px;
+			cursor: default;
+			text-align: center;
+			width: 375px;
+			margin: 0.5px;
+			font-family: "Cascadia Code", Cascadia Code, monospace;
+		}
+		.shop-button.disabled {
+			background-color: transparent;
+			cursor: default;
+			border: 2px solid #555555;
+			color: #555555;
+			text-align: center;
+		}
+		.mega-button {
+			background-color: transparent;
+			border: 2px solid silver;
+			color: silver;
+			cursor: default;
+		}
+		.giga-button {
+			background-color: transparent;
+			border: 2px solid gold;
+			color: gold;
+			cursor: default;
+		}
+		.center-container {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			height: 97vh;
+		}
+		.clicker-text {
+			font-size: 40px;
+			font-variant: small-caps;
+			text-align: center;
+			cursor: normal;
+			font-weight: bold;
+			text-shadow: 2px 2px 4px #333333;
+		}
+		.Text {
+			font-size: 25px;
+			text-align: center;
+			cursor: normal;
+			font-weight: bold;
+			color: #505050;
+		}
+		.bottom-Text {
+			font-size: 10px;
+			text-align: center;
+			cursor: default;
+			color: #505050;
+			text-decoration: underlined;
+		}
+		.shop-button:not(.disabled):hover {
+			background-color: rgba(255, 255, 255, 0.2);
+		}
+		#autobuy {
+			border: 2px solid #555555;
+			color: #555555;
+			cursor: not-allowed;
+		}
+		#autobuy:not(.disabled) {
+			border: 2px solid #00fff2;
+			color: #00fff2;
+			cursor: default;
+		}
+		#autobuy:not(.disabled):hover {
+			background-color: rgba(0, 255, 242, 0.2);
+		}
+
+	</style>
+</head>
+<body onkeydown="disableEnterKey(event)">
+	<div class="center-container">
+		<span class="clicker-text" id="title" onclick="changeTitleColor()">Clicker</span>
+		<button class="custom-button" onclick="increasementCounter()"><id="clickButtonText"><span id="counter">0</span></button>
+		<p><span class="Text">-----------Info-----------</span><br>
+		<span id="cps">0</span> CPS<br><span id="cpc">1</span> CPC</p>
+		<span class="Text">-----------Shop-----------</span>
+			<span>
+				<button id="upgrade1" class="shop-button" onclick="buyUpgrade(10, 'perSecond', 1)">+ 1 CPS | - 10 Klicks</button>
+				<button id="upgrade2" class="shop-button" onclick="buyUpgrade(20, 'perClick', 1)">+ 1 CPC | - 20 Klicks</button>
+			</span>
+			<span>
+				<button id="upgrade3" class="shop-button" onclick="buyUpgrade(100, 'perSecond', 10)">+ 10 CPS | - 100 Klicks</button>
+				<button id="upgrade4" class="shop-button" onclick="buyUpgrade(200, 'perClick', 10)">+ 10 CPC | - 200 Klicks</button>
+			</span>
+			<span>
+				<button id="megaPack" class="shop-button mega-button" onclick="buyUpgrade(1e6, 'megaPack', {cps: 100000, cpc: 100000})">+ 100 Tsd. CPS & CPC | - 1 Mio. Klicks</button>
+				<button id="gigaPack" class="shop-button giga-button" onclick="buyUpgrade(1e9, 'gigaPack', {cps: 1e8, cpc: 1e8})">+ 100 Mio. CPS & CPC | - 1 Mrd. Klicks</button>
+			</span>
+			<span>
+				<button id="autobuy" class="shop-button disabled" onclick="autobuy()">Autobuy (1T Klicks benötigt)</button>
+			</span>
+		<p><span class="Text">---------Optionen---------</span>
+		<br>
+		<span><button class="reset-button" id="resetButton" onclick="confirmReset()">Zurücksetzen</button><button class="reset-button" id="toggleFormatButton" onclick="toggleNumberFormat()">Kurzschreibweise: Ein</button></span></p>
+		<span class='bottom-Text'>Made by Ben Lange. <a class='bottom-Text' href="https://de.wikipedia.org/wiki/MIT-Lizenz">MIT-Lizenz</a></span>
+		<span class='bottom-Text'>Zuletzt bearbeitet am: 22.02.2025 14:56:40</span>
+	</div>
+	<script>
+		let counter = 0;
+		let clicksPerSecond = 0;
+		let clicksPerClick = 1;
+		let clickTimeout;
+		let useShortFormat = true;
+		
+		function disableEnterKey(event) {
+			if (counter <= 1000) {
+				if (event.key === 'Enter') {
+					event.preventDefault();
+				}
+			}
+		}
+		
+		function increasementCounter() {
+			counter += clicksPerClick;
+			updateDisplay();
+		}
+		
+		function buyUpgrade(cost, type, amount) {
+			if (counter >= cost) {
+				counter -= cost;
+				if (type === 'perSecond') {
+					clicksPerSecond += amount;
+				} else if (type === 'perClick') {
+					clicksPerClick += amount;
+				} else if (type === 'megaPack' || type === 'gigaPack' || type === 'autobuy') {
+					clicksPerSecond += amount.cps;
+					clicksPerClick += amount.cpc;
+				}
+				updateDisplay();
+			}
+		}
+		
+		function updateButtons() {
+			const upgrades = [
+				{ id: 'upgrade1', cost: 10 },
+				{ id: 'upgrade2', cost: 20 },
+				{ id: 'upgrade3', cost: 100 },
+				{ id: 'upgrade4', cost: 200 },
+				{ id: 'megaPack', cost: 1e6 },
+				{ id: 'gigaPack', cost: 1e9 },
+				{ id: 'autobuy', cost: counter },
+				
+			];
+			upgrades.forEach(upgrade => {
+				const button = document.getElementById(upgrade.id);
+				if (counter >= upgrade.cost) {
+					button.classList.remove('disabled');
+				} else {
+					button.classList.add('disabled');
+				}
+			});
+		}
+		
+		function autoClick() {
+			counter += clicksPerSecond;
+			updateDisplay();
+		}
+		
+		function getRandomColor() {
+			const colors = ['#FFFFFF', '#FF0000', '#FFFF00', '#00FF00', '#00FFFF', '#FF00FF', '#0000FF'];
+			return colors[Math.floor(Math.random() * colors.length)];
+		}
+		
+		function changeTitleColor() {
+			const randomColor = getRandomColor();
+			document.getElementById('title').style.color = randomColor;
+		}
+		
+		function confirmReset() {
+			if (clickTimeout) {
+				resetCounter();
+			} else {
+				clickTimeout = setTimeout(() => {
+					clickTimeout = null;
+				}, 1000);
+			}
+		}
+		
+		function resetCounter() {
+			counter = 0;
+			clicksPerSecond = 0;
+			clicksPerClick = 1;
+			updateDisplay();
+		}
+		
+		function formatNumber(num) {
+			if (!useShortFormat) return num.toLocaleString().replace(/\,/g, ".");
+			if (num >= 1e15) return (num / 1e15).toFixed(1).replace(/\./g, ",") + ' Brd.';
+			if (num >= 1e12) return (num / 1e12).toFixed(1).replace(/\./g, ",") + ' Bio.';
+			if (num >= 1e9) return (num / 1e9).toFixed(1).replace(/\./g, ",") + ' Mrd.';
+			if (num >= 1e6) return (num / 1e6).toFixed(1).replace(/\./g, ",") + ' Mio.';
+			if (num >= 1e3) return (num / 1e3).toFixed(1).replace(/\./g, ",") + ' Tsd.';
+			return num.toString().replace(/\,/g, ".");
+		}
+		
+		function updateDisplay() {
+			document.getElementById('counter').innerText = formatNumber(counter);
+			document.getElementById('cps').innerText = formatNumber(clicksPerSecond);
+			document.getElementById('cpc').innerText = formatNumber(clicksPerClick);
+			updateButtons();
+			document.getElementById('toggleFormatButton').innerText = `Kurzschreibweise ${useShortFormat ? 'ein' : 'aus'}`;
+			updateClickButtonText();
+		}
+		
+		function updateClickButtonText() {
+			document.getElementById('clickButtonText').innerHTML = `<span id="counter">${formatNumber(counter)}</span>`;
+		}
+		
+		function toggleNumberFormat() {
+			useShortFormat = !useShortFormat;
+			updateDisplay();
+		}
+		
+		function checkAutobuyAvailability() {
+			const autobuyBtn = document.getElementById("autobuy");
+			if (counter >= 1e12) {
+				autobuyBtn.classList.remove("disabled");
+				autobuyBtn.style.border = "2px solid #00fff2";
+				autobuyBtn.style.color = "#00fff2";
+				autobuyBtn.style.cursor = "pointer";
+			} else {
+				autobuyBtn.classList.add("disabled");
+				autobuyBtn.style.border = "2px solid #555555";
+				autobuyBtn.style.color = "#555555";
+				autobuyBtn.style.cursor = "not-allowed";
+			}
+		}
+		
+		document.addEventListener('DOMContentLoaded', function () {
+			document.getElementById('resetButton').click();
+			document.getElementById('resetButton').click();
+			changeTitleColor();
+			updateDisplay();
+		});
+		setInterval(autoClick, 1000);
+	</script>
+</body>
+</html>
