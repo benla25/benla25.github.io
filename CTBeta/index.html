@@ -42,6 +42,7 @@
       border-radius: 40px;
       cursor: default;
       transition: background-color 0.3s ease, border-radius 0.4s ease;
+      user-select: none;
     }
 
     .download:hover {
@@ -99,7 +100,7 @@
   </div>
 
   <div class="fixed-footer">
-    <button class="download" onclick="downloadFile()">Datei herunterladen.</button>
+    <button class="download" onclick="downloadFile()">Datei herunterladen</button><button class="download" onclick="share()">Teilen</button>
   </div>
 
   <script>
@@ -114,4 +115,3 @@
   </script>
 </body>
 </html>
-
