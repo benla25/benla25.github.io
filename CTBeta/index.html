@@ -31,7 +31,7 @@
       z-index: 1000;
     }
 
-    button {
+    .download {
       background-color: #c2e7ff;
       color: black;
       padding: 10px 20px;
@@ -39,12 +39,23 @@
       border-radius: 40px;
       cursor: pointer;
       transition: background-color 0.3s ease, border-radius 0.4s ease;
+      user-select: none;
     }
 
-    button:hover {
+    .download:hover {
       background-color: #b1d6ff;
       border-radius: 10px;
       transition: background-color 0.2s ease, border-radius 0.2s ease;
+    }
+    .text {
+      background-color: #404040;
+      color: black;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 10px;
+      cursor: default;
+      width: 600px;
+      text-align: center;
     }
 
     .content {
@@ -55,11 +66,12 @@
 
 <body>
   <div class="content">
-    <iframe class="iframe" src="ctbeta-viewer.html" width="600" height="400"></iframe>
+    <iframe class="iframe" src="ctbeta-viewer.html" width="600" height="400"></iframe><br>
+    <button class="text">Test</button>
   </div>
 
   <div class="fixed-footer">
-    <button onclick="downloadFile()">Download JS</button>
+    <button class="download" onclick="downloadFile()">Download JS</button>
   </div>
 
   <script>
