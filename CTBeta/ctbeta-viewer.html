@@ -1,57 +1,61 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <title>CT Beta Viewer</title>
-    <style>
-        html, body {
-            margin: 0;
-            padding: 0;
-            color: white;
-            scrollbar-color: white #404040; /* Griff, Hintergrund */
-            scrollbar-width: thin;
-        }
-        #textContainer {
-            white-space: pre; /* Kein Zeilenumbruch */
-            font-family: monospace;
-            tab-size: 4;
-            -moz-tab-size: 4;
-            -o-tab-size: 4;
-            padding: 10px;
-        }
-/* Für WebKit-Browser: Chrome, Edge, Safari */
-::-webkit-scrollbar {
-  width: 12px;
-  height: 12px;
-}
+  <meta charset="UTF-8">
+  <title>CT Beta Viewer</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: #404040;
+      color: white;
+      font-family: monospace;
+      height: 100vh;
+      overflow: auto;
 
-::-webkit-scrollbar-track {
-  background: #404040; /* Hintergrund der Scrollleiste */
-}
+      /* Firefox Scrollbar */
+      scrollbar-color: white #404040;
+      scrollbar-width: thin;
+    }
 
-::-webkit-scrollbar-thumb {
-  background-color: white; /* Griff */
-  border-radius: 6px;
-  border: 2px solid #404040; /* optionaler Rand */
-}
-    </style>
+    #textContainer {
+      white-space: pre; /* Kein Zeilenumbruch */
+      tab-size: 4;
+      padding: 20px;
+      overflow: auto;
+      max-height: 100vh;
+    }
+
+    /* WebKit Scrollbar */
+    ::-webkit-scrollbar {
+      width: 12px;
+      height: 12px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #404040;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background-color: white;
+      border-radius: 6px;
+      border: 2px solid #404040;
+    }
+  </style>
 </head>
 <body>
-    <div id="textContainer">Lade Text...</div>
+  <div id="textContainer">Lade Text...</div>
 
-    <script>
-        fetch('ctbeta.txt')
-            .then(response => response.text())
-            .then(text => {
-                document.getElementById('textContainer').textContent = text;
-            })
-            .catch(err => {
-                document.getElementById('textContainer').textContent = 'Fehler beim Laden der Datei.';
-                console.error(err);
-            });
-    </script>
+  <script>
+    fetch('ctbeta.txt')
+      .then(response => response.text())
+      .then(text => {
+        document.getElementById('textContainer').textContent = text;
+      })
+      .catch(err => {
+        document.getElementById('textContainer').textContent = 'Fehler beim Laden der Datei.';
+        console.error(err);
+      });
+  </script>
 </body>
 </html>
-
-
-
