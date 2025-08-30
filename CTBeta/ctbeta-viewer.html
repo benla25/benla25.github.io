@@ -10,6 +10,13 @@
       background-color: #404040;
       color: white;
       font-family: monospace;
+      height: 100%;
+    }
+
+    #textContainer {
+      white-space: pre;
+      tab-size: 4;
+      padding: 20px;
       height: 100vh;
       overflow: auto;
 
@@ -18,25 +25,17 @@
       scrollbar-width: thin;
     }
 
-    #textContainer {
-      white-space: pre; /* Kein Zeilenumbruch */
-      tab-size: 4;
-      padding: 20px;
-      overflow: auto;
-      max-height: 100vh;
-    }
-
     /* WebKit Scrollbar */
-    ::-webkit-scrollbar {
+    #textContainer::-webkit-scrollbar {
       width: 12px;
       height: 12px;
     }
 
-    ::-webkit-scrollbar-track {
+    #textContainer::-webkit-scrollbar-track {
       background: #404040;
     }
 
-    ::-webkit-scrollbar-thumb {
+    #textContainer::-webkit-scrollbar-thumb {
       background-color: white;
       border-radius: 6px;
       border: 2px solid #404040;
@@ -48,7 +47,10 @@
 
   <script>
     fetch('ctbeta.txt')
-      .then(response => response.text())
+      .then(response => {
+        if (!response.ok) throw new Error('Datei nicht gefunden');
+        return response.text();
+      })
       .then(text => {
         document.getElementById('textContainer').textContent = text;
       })
