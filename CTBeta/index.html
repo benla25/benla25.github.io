@@ -20,12 +20,16 @@ button:hover {
   border-radius: 10px;
   transition: background-color 0.2s ease, border-radius 0.2s ease;
 }
+.iframe {
+  border: 2px solid #ccc;
+  border-radius: 5px;
+}
 </style>
 </head>
 
 <body>
 <button onclick="downloadFile()">Download JS</button><br>
-<iframe src="ctbeta-viewer.html" width="600" height="400" style="border:1px solid #ccc;"></iframe>
+<iframe class="iframe" src="ctbeta-viewer.html" width="600" height="400"></iframe>
 
 <script>
   function downloadFile() {
@@ -39,3 +43,4 @@ button:hover {
 </script>
 
 </body>
+
