@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>CT Beta Viewer</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        #textContainer {
+            white-space: pre; /* Kein Zeilenumbruch */
+            font-family: monospace;
+            tab-size: 4;
+            -moz-tab-size: 4;
+            -o-tab-size: 4;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="textContainer">Lade Text...</div>
+
+    <script>
+        fetch('ctbeta.txt')
+            .then(response => response.text())
+            .then(text => {
+                document.getElementById('textContainer').textContent = text;
+            })
+            .catch(err => {
+                document.getElementById('textContainer').textContent = 'Fehler beim Laden der Datei.';
+                console.error(err);
+            });
+    </script>
+</body>
+</html>

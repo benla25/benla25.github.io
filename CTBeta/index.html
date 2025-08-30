@@ -1,0 +1,44 @@
+<head>
+<title>Download Cat Toolbox Beta</title>
+<style>
+body {
+  text-align: center;
+  align-items: center;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Ubuntu", "Cantarell", sans-serif;
+}
+button {
+  background-color: #c2e7ff;
+  color: black;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 40px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, border-radius 0.4s ease;
+}
+button:hover {
+  background-color: #b1d6ff;
+  border-radius: 10px;
+  transition: background-color 0.2s ease, border-radius 0.2s ease;
+}
+.iframe {
+  white-space: nowrap;
+  tab-size: 4px;
+}
+</style>
+</head>
+
+<body>
+<button onclick="downloadFile()">Download JS</button><br>
+<iframe src="ctbeta-viewer.html" width="800" height="400" style="border:1px solid #ccc;"></iframe>
+
+<script>
+  function downloadFile() {
+    const link = document.createElement("a");
+    link.href = "ctbeta.js";
+    link.download = "Cat Toolbox Beta.js";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+</script>
+</body>
