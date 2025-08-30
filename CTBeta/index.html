@@ -112,6 +112,17 @@
       link.click();
       document.body.removeChild(link);
     }
-  </script>
+        function share() {
+            if (navigator.share) {
+                navigator.share({
+                    title: "Cat Toolbox Beta",
+                    text: "Sieh dir die größte Erweiterung für TurboWarp an.\n\nhttps://benla25.github.io/CTBeta",
+                }).catch(error => console.log("Fehler beim Teilen: ", error));
+            } else {
+                alert("Teilen-Funktion wird von diesem Browser nicht unterstützt.");
+            }
+        }
+    </script>
 </body>
 </html>
+
