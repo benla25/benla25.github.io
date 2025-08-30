@@ -27,23 +27,23 @@ button:hover {
   text-color: #ffffff;
 }
 /* Für WebKit-Browser: Chrome, Edge, Safari */
-.scrollbereich::-webkit-scrollbar {
+.iframe::-webkit-scrollbar {
   width: 12px;
   height: 12px;
 }
 
-.scrollbereich::-webkit-scrollbar-track {
+.iframe::-webkit-scrollbar-track {
   background: #404040; /* Hintergrund der Scrollleiste */
 }
 
-.scrollbereich::-webkit-scrollbar-thumb {
+.iframe::-webkit-scrollbar-thumb {
   background-color: white; /* Griff */
   border-radius: 6px;
   border: 2px solid #404040; /* optionaler Rand */
 }
 
 /* Für Firefox */
-.scrollbereich {
+.iframe {
   scrollbar-color: white #404040;
   scrollbar-width: thin;
 }
@@ -52,9 +52,8 @@ button:hover {
 
 <body>
 <button onclick="downloadFile()">Download JS</button><br>
-  <div class="scrollbereich" style="overflow: auto; height: 200px;">
 <iframe class="iframe" src="ctbeta-viewer.html" width="600" height="400"></iframe>
-  </div>
+
 <script>
   function downloadFile() {
     const link = document.createElement("a");
@@ -67,6 +66,7 @@ button:hover {
 </script>
 
 </body>
+
 
 
 
