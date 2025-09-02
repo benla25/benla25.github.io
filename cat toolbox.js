@@ -215,6 +215,25 @@ class CatToolboxExtension {
 					}
 				},
 				{
+					opcode: "ternaryOperator",
+					blockType: Scratch.BlockType.REPORTER,
+					text: Scratch.translate("Falls [A] dann [B] sonst [C]"),
+					arguments: {
+					    A: {
+							type: Scratch.ArgumentType.BOOLEAN,
+					    },
+					    B: {
+							type: Scratch.ArgumentType.STRING,
+							defaultValue: "a",
+					    },
+					    C: {
+							type: Scratch.ArgumentType.STRING,
+							defaultValue: "b",
+					    },
+					},
+					allowDropAnywhere: true,
+				},
+				{
 					opcode: 'erstelleHTMLString',
 					blockType: Scratch.BlockType.REPORTER,
 					text: 'HTML-String für Text [TEXT] Schriftart [FONT] Farbe [COLOR] Größe [SIZE] Format [FORMAT]',
@@ -1281,10 +1300,10 @@ class CatToolboxExtension {
 	}
 	info(args) {
 		if (args.AUSWAHL === 'Version') {
-			return 'Version 2025.35.12';
+			return 'Version 2025.36.1';
 		}
 		if (args.AUSWAHL === 'Änderungen') {
-			return 'Mehrere Blöcke hinzugefügt\nBugs behoben\Erweiterungen kombiniert in diese';
+			return '1 Block hinzugefügt';
 		}
 		if (args.AUSWAHL === 'Programmierer') {
 			return 'Made by Cat27082024/Ben5594';
@@ -1480,5 +1499,8 @@ class CatToolboxExtension {
 		const [, yyyy, mm, dd, hh = '00', min = '00', ss = '00'] = match;
 		return `${dd}.${mm}.${yyyy} ${hh}:${min}:${ss}`;
 	}
+    ternaryOperator({ A, B, C }) {
+		return A ? B : C;
+    }
 }
 Scratch.extensions.register(new CatToolboxExtension());
