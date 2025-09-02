@@ -2,6 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Meine Aufgaben</title>
   <style>
     @font-face {
@@ -18,6 +19,7 @@
       overflow-x: hidden;
       background: #0a1616;
       color: #ffffff;
+	  caret-color: #01fcf3;
     }
 
     .center-container {
@@ -46,13 +48,14 @@
       min-height: 45px;
       height: 45px;
       width: 352px;
-      transition: border-radius 0.3s ease;
+      transition: border-radius 0.3s ease, background-color 0.2s ease;
 	  max-height: 150px;
     }
 
     #taskInput:focus {
       outline: none;
       box-shadow: none;
+	  background-color: #2a3838;
     }
 
     .add-btn {
@@ -160,26 +163,33 @@
     .task-bubble {
       position: relative;
       width: 300px;
-      background: #202c2c;
+      background-color: #202c2c;
       padding: 0.75em;
       padding-right: 2.5em;
       word-wrap: break-word;
       animation: slideIn 0.4s ease-out;
       border-radius: 22px;
-      transition: border-radius 0.4s ease;
+      transition: background-color 0.2s ease, border-radius 0.4s ease;
       box-shadow: none;
       font-size: 16px;
-
-      /* in der 352px-Box mittig ausrichten */
       margin-left: auto;
       margin-right: auto;
     }
+	
+	.task-bubble.editing {
+      background-color: #2a3838;
+	  transition: background-color 0.2s ease;
+}
 
     .task-text {
       margin: 0;
       text-align: left;
       color: white;
       white-space: pre-line;
+    }
+	
+	.task-text:focus {
+      outline: none;
     }
 
     .delete-btn {
@@ -240,184 +250,218 @@
     </div>
   </div>
 
-  <script>
-    const taskInput = document.getElementById("taskInput");
-    const addBtn = document.querySelector(".add-btn");
-    const taskList = document.getElementById("taskList");
-    const baseHeight = 45;
+<script>
+const taskInput = document.getElementById("taskInput");
+const addBtn = document.querySelector(".add-btn");
+const taskList = document.getElementById("taskList");
+const baseHeight = 45;
 
-    function adjustHeight() {
-      taskInput.style.height = baseHeight + 'px';
-      if (taskInput.value.trim() !== '') {
-        taskInput.style.height = taskInput.scrollHeight + 'px';
-      }
-    }
+function adjustHeight() {
+  taskInput.style.height = baseHeight + 'px';
+  if (taskInput.value.trim() !== '') {
+    taskInput.style.height = taskInput.scrollHeight + 'px';
+  }
+}
 
-    function updateAddButtonVisibility() {
-      addBtn.classList.toggle("visible", taskInput.value.trim() !== "");
-    }
+function updateAddButtonVisibility() {
+  addBtn.classList.toggle("visible", taskInput.value.trim() !== "");
+}
 
-    function saveTask(task) {
-      const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
-      tasks.unshift(task);
-      localStorage.setItem("tasks", JSON.stringify(tasks));
-    }
+function saveTaskList(tasks) {
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+}
 
-    function removeTask(task) {
-      let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
-      tasks = tasks.filter(t => t !== task);
-      localStorage.setItem("tasks", JSON.stringify(tasks));
-    }
+function getTaskList() {
+  const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  return tasks;
+}
 
-    function createBubble(task) {
-      const bubble = document.createElement("div");
-      bubble.className = "task-bubble";
+function updateTask(index, newText) {
+  const tasks = getTaskList();
+  if (index >= 0 && index < tasks.length) {
+    tasks[index] = newText;
+    saveTaskList(tasks);
+  }
+}
 
-      const text = document.createElement("p");
-      text.className = "task-text";
-      text.textContent = task;
+function createBubble(taskText, index) {
+  const bubble = document.createElement("div");
+  bubble.className = "task-bubble";
+  bubble.dataset.index = index;
 
-      const removeBtn = document.createElement("button");
-      removeBtn.className = "delete-btn";
-      removeBtn.innerHTML = `
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 6v12M6 12h12" />
-        </svg>
-      `;
+  const text = document.createElement("div");
+  text.className = "task-text";
+  text.textContent = taskText;
+  text.setAttribute("contenteditable", "false");
+  text.style.whiteSpace = "pre-wrap";
 
-      removeBtn.onclick = () => {
-        const li = bubble.parentElement;
-        const height = li.offsetHeight;
+  // Bearbeiten starten
+  text.addEventListener("click", () => {
+    text.setAttribute("contenteditable", "true");
+    text.focus();
+    bubble.classList.add("editing");
+  });
 
-        bubble.style.animation = "slideOut 0.3s ease-out forwards";
-        li.style.height = height + "px";
-        li.style.margin = "1px 0";
-        li.style.overflow = "hidden";
-        li.style.transition = "height 0.3s ease, margin 0.3s ease";
+  // Bearbeiten beenden & speichern
+  text.addEventListener("blur", () => {
+    text.setAttribute("contenteditable", "false");
+    bubble.classList.remove("editing");
 
-        requestAnimationFrame(() => {
-          li.style.height = "0px";
-          li.style.margin = "0px";
-        });
+    const cleaned = text.innerText
+      .replace(/^\s*\n+/g, "")
+      .replace(/\n+\s*$/g, "")
+      .replace(/\n{2,}/g, "\n\n");
 
-        Promise.all([
-          new Promise(resolve => bubble.addEventListener("animationend", resolve, { once: true })),
-          new Promise(resolve => li.addEventListener("transitionend", resolve, { once: true }))
-        ]).then(() => {
-          li.remove();
-          removeTask(task);
-          updateBubbleCorners();
-          taskInput.focus();
-        });
-      };
+    text.innerText = cleaned;
 
-      bubble.appendChild(removeBtn);
-      bubble.appendChild(text);
-      return bubble;
-    }
+    const idx = parseInt(bubble.dataset.index);
+    updateTask(idx, cleaned);
+  });
 
-    function renderTask(task, animate = true) {
-      const li = document.createElement("li");
-      const bubble = createBubble(task);
-      if (!animate) bubble.style.animation = "none";
+  // Löschen
+  const removeBtn = document.createElement("button");
+  removeBtn.className = "delete-btn";
+  removeBtn.innerHTML = `
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 6v12M6 12h12" />
+    </svg>
+  `;
 
-      li.appendChild(bubble);
-      taskList.insertBefore(li, taskList.firstChild);
-      updateBubbleCorners();
-    }
+  removeBtn.onclick = () => {
+    const li = bubble.parentElement;
+    const height = li.offsetHeight;
 
-    // Ecken-Logik:
-    // - Erste Bubble: oben immer 6px (Input ist immer da)
-    // - Letzte Bubble: unten 22px, sonst 6px
-    // - Eingabefeld: unten 6px, sobald mind. eine Bubble existiert; sonst 22.5px
-    function updateBubbleCorners() {
-      const items = Array.from(taskList.children).filter(el => el.querySelector(".task-bubble"));
-      items.forEach((li, index) => {
-        const bubble = li.querySelector(".task-bubble");
-        if (!bubble) return;
+    bubble.style.animation = "slideOut 0.3s ease-out forwards";
+    li.style.height = height + "px";
+    li.style.margin = "1px 0";
+    li.style.overflow = "hidden";
+    li.style.transition = "height 0.3s ease, margin 0.3s ease";
 
-        const isLast = index === items.length - 1;
-
-        const topRadius = "6px";
-        const bottomRadius = isLast ? "22px" : "6px";
-
-        bubble.style.borderTopLeftRadius = topRadius;
-        bubble.style.borderTopRightRadius = topRadius;
-        bubble.style.borderBottomLeftRadius = bottomRadius;
-        bubble.style.borderBottomRightRadius = bottomRadius;
-      });
-
-      if (items.length > 0) {
-        taskInput.style.borderBottomLeftRadius = "6px";
-        taskInput.style.borderBottomRightRadius = "6px";
-      } else {
-        taskInput.style.borderBottomLeftRadius = "22.5px";
-        taskInput.style.borderBottomRightRadius = "22.5px";
-      }
-    }
-
-    function addTask() {
-      const task = taskInput.value.trim();
-      if (task === "") return;
-
-      // Höhe messen für Einfüge-Animation
-      const preview = createBubble(task);
-      preview.style.position = "absolute";
-      preview.style.visibility = "hidden";
-      document.body.appendChild(preview);
-      const height = preview.offsetHeight;
-      document.body.removeChild(preview);
-
-      const li = document.createElement("li");
-      const bubble = createBubble(task);
-      li.appendChild(bubble);
-
-      // Startzustand für Animation
+    requestAnimationFrame(() => {
       li.style.height = "0px";
       li.style.margin = "0px";
-      li.style.overflow = "hidden";
-      li.style.transition = "height 0.3s ease, margin 0.3s ease";
-
-      // Element einfügen
-      taskList.insertBefore(li, taskList.firstChild);
-
-      // Höhe animieren
-      requestAnimationFrame(() => {
-        const h = bubble.offsetHeight || height;
-        li.style.height = h + "px";
-        li.style.margin = "1px 0";
-      });
-
-      // Nach Animation aufräumen und speichern
-      li.addEventListener("transitionend", () => {
-        li.style.height = "";
-        li.style.margin = "";
-        li.style.overflow = "";
-        li.style.transition = "";
-        saveTask(task);
-        updateBubbleCorners();
-      }, { once: true });
-
-      // Eingabefeld zurücksetzen
-      taskInput.value = "";
-      adjustHeight();
-      updateAddButtonVisibility();
-      taskInput.focus();
-    }
-
-    window.onload = () => {
-      const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
-      tasks.forEach(task => renderTask(task, false));
-      updateBubbleCorners();
-      updateAddButtonVisibility();
-    };
-
-    taskInput.addEventListener("input", () => {
-      adjustHeight();
-      updateAddButtonVisibility();
     });
 
-    addBtn.addEventListener("click", addTask);
-  </script>
+    Promise.all([
+      new Promise(resolve => bubble.addEventListener("animationend", resolve, { once: true })),
+      new Promise(resolve => li.addEventListener("transitionend", resolve, { once: true }))
+    ]).then(() => {
+      const tasks = getTaskList();
+      tasks.splice(index, 1);
+      saveTaskList(tasks);
+      renderAllTasks();
+      updateBubbleCorners();
+    });
+  };
+
+  bubble.appendChild(removeBtn);
+  bubble.appendChild(text);
+  return bubble;
+}
+
+function renderTask(taskText, index, animate = true) {
+  const li = document.createElement("li");
+  const bubble = createBubble(taskText, index);
+  if (!animate) bubble.style.animation = "none";
+
+  li.appendChild(bubble);
+  taskList.insertBefore(li, taskList.firstChild);
+  updateBubbleCorners();
+}
+
+function renderAllTasks() {
+  taskList.innerHTML = "";
+  const tasks = getTaskList();
+  tasks.forEach((task, i) => renderTask(task, i, false));
+  updateBubbleCorners();
+}
+
+function updateBubbleCorners() {
+  const items = Array.from(taskList.children).filter(el => el.querySelector(".task-bubble"));
+  items.forEach((li, index) => {
+    const bubble = li.querySelector(".task-bubble");
+    if (!bubble) return;
+
+    const isLast = index === items.length - 1;
+
+    const topRadius = "6px";
+    const bottomRadius = isLast ? "22px" : "6px";
+
+    bubble.style.borderTopLeftRadius = topRadius;
+    bubble.style.borderTopRightRadius = topRadius;
+    bubble.style.borderBottomLeftRadius = bottomRadius;
+    bubble.style.borderBottomRightRadius = bottomRadius;
+  });
+
+  if (items.length > 0) {
+    taskInput.style.borderBottomLeftRadius = "6px";
+    taskInput.style.borderBottomRightRadius = "6px";
+  } else {
+    taskInput.style.borderBottomLeftRadius = "22.5px";
+    taskInput.style.borderBottomRightRadius = "22.5px";
+  }
+}
+
+function addTask() {
+  const taskText = taskInput.value.trim();
+  if (taskText === "") return;
+
+  // Sofort in Speicher einfügen
+  const tasks = getTaskList();
+  tasks.unshift(taskText);
+  saveTaskList(tasks);
+
+  // Höhe messen für Animation
+  const preview = createBubble(taskText, 0);
+  preview.style.position = "absolute";
+  preview.style.visibility = "hidden";
+  document.body.appendChild(preview);
+  const height = preview.offsetHeight;
+  document.body.removeChild(preview);
+
+  // Neues Element einfügen
+  const li = document.createElement("li");
+  const bubble = createBubble(taskText, 0);
+  li.appendChild(bubble);
+
+  li.style.height = "0px";
+  li.style.margin = "0px";
+  li.style.overflow = "hidden";
+  li.style.transition = "height 0.3s ease, margin 0.3s ease";
+
+  taskList.insertBefore(li, taskList.firstChild);
+
+  requestAnimationFrame(() => {
+    li.style.height = height + "px";
+    li.style.margin = "1px 0";
+  });
+
+  // Erst nach Animation neu rendern
+  li.addEventListener("transitionend", () => {
+    li.style.height = "";
+    li.style.margin = "";
+    li.style.overflow = "";
+    li.style.transition = "";
+    updateBubbleCorners();
+  }, { once: true });
+
+  taskInput.value = "";
+  adjustHeight();
+  updateAddButtonVisibility();
+}
+
+window.onload = () => {
+  renderAllTasks();
+  updateBubbleCorners();
+  updateAddButtonVisibility();
+};
+
+taskInput.addEventListener("input", () => {
+  adjustHeight();
+  updateAddButtonVisibility();
+});
+
+addBtn.addEventListener("click", addTask);
+</script>
 </body>
 </html>
