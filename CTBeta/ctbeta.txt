@@ -247,6 +247,25 @@
 						}
 					},
 					{
+						opcode: "ternaryOperator",
+						blockType: Scratch.BlockType.REPORTER,
+						text: Scratch.translate("Falls [A] dann [B] sonst [C]"),
+						arguments: {
+							A: {
+								type: Scratch.ArgumentType.BOOLEAN,
+							},
+							B: {
+								type: Scratch.ArgumentType.STRING,
+								defaultValue: "a",
+							},
+							C: {
+								type: Scratch.ArgumentType.STRING,
+								defaultValue: "b",
+							},
+						},
+						allowDropAnywhere: true,
+					},
+					{
 						opcode: 'erstelleHTMLString',
 						blockType: Scratch.BlockType.REPORTER,
 						text: 'HTML-String für Text [TEXT] Schriftart [FONT] Farbe [COLOR] Größe [SIZE] Format [FORMAT]',
@@ -1380,10 +1399,10 @@
 		}
 		info(args) {
 			if (args.AUSWAHL === 'Version') {
-				return 'Version 2025.35.15';
+				return 'Version 2025.36.1';
 			}
 			if (args.AUSWAHL === 'Änderungen') {
-				return '4 Blöcke hinzugefügt';
+				return '1 Block hinzugefügt';
 			}
 			if (args.AUSWAHL === 'Programmierer') {
 				return 'Made by Cat27082024/Ben5594';
@@ -1613,6 +1632,9 @@
 		setFramerate({ fps }) {
 			fps = Scratch.Cast.toNumber(fps);
 			Scratch.vm.setFramerate(fps);
+		}
+		ternaryOperator({ A, B, C }) {
+			return A ? B : C;
 		}
 	}
 	Scratch.extensions.register(new CatToolboxExtension());
