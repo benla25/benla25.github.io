@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nachtuhr</title>
+  <style>
+    @font-face {
+      font-family: 'Helvetica Light';
+      src: url('resources/Helvetica-Light.ttf') format('truetype');
+      font-weight: 300;
+      font-style: normal;
+    }
+
+    body {
+      margin: 0;
+      background-color: #000;
+      color: #fff;
+      font-family: "Helvetica Light", sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      transition: all 0.5s ease;
+      user-select: none;
+    }
+
+    .clock {
+      text-align: center;
+      line-height: 0.9;
+    }
+
+    .hours, .minutes {
+      font-size: 8rem;
+      transition: all 0.5s ease;
+    }
+
+    .date {
+      font-size: 1.5rem;
+      margin-top: 1rem;
+      opacity: 0.6;
+      transition: all 0.5s ease;
+    }
+
+    .dimmed .hours,
+    .dimmed .minutes,
+    .dimmed .date {
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(255, 255, 255, 0.3);
+      text-stroke: 1px rgba(255, 255, 255, 0.3);
+    }
+
+    .controls {
+      position: absolute;
+      bottom: 2rem;
+      display: flex;
+      gap: 1rem;
+    }
+
+    .toggle-btn {
+      background: #222;
+      color: #ccc;
+      border: none;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      border-radius: 20px;
+      cursor: default;
+      font-family: "Helvetica Light", sans-serif;
+      opacity: 0.5;
+      transition: all 0.5s ease;
+    }
+
+    .dimmed .toggle-btn {
+      background: #010101;
+      color: #202020;
+    }
+
+    .toggle-btn:hover {
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+  <div class="clock">
+    <div class="hours" id="hours">00</div>
+    <div class="minutes" id="minutes">00</div>
+    <div class="date" id="date">Datum</div>
+  </div>
+
+  <div class="controls">
+    <button class="toggle-btn" onclick="toggleDim()">Dimmen</button>
+    <button class="toggle-btn" onclick="toggleFullscreen()">Vollbild</button>
+  </div>
+
+  <script>
+    let manualDim = false;
+    let wakeLock = null;
+
+    function updateClock() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const d = now.toLocaleDateString('de-DE', {
+        weekday: 'short',
+        day: '2-digit',
+        month: 'short'
+      });
+
+      document.getElementById('hours').textContent = h;
+      document.getElementById('minutes').textContent = m;
+      document.getElementById('date').textContent = d;
+    }
+
+    function applyDimMode() {
+      const hour = new Date().getHours();
+      const isNight = hour >= 20 || hour < 6;
+      const shouldDim = manualDim || isNight;
+      document.body.classList.toggle('dimmed', shouldDim);
+    }
+
+    function toggleDim() {
+      manualDim = !manualDim;
+      applyDimMode();
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          console.warn(`Vollbildmodus konnte nicht aktiviert werden: ${err.message}`);
+        });
+      } else {
+        document.exitFullscreen();
+      }
+    }
+
+    async function requestWakeLock() {
+      try {
+        if ('wakeLock' in navigator) {
+          wakeLock = await navigator.wakeLock.request('screen');
+          wakeLock.addEventListener('release', () => {
+            console.log('Wake Lock wurde freigegeben');
+          });
+          console.log('Wake Lock aktiviert');
+        }
+      } catch (err) {
+        console.error(`Wake Lock Fehler: ${err.name}, ${err.message}`);
+      }
+    }
+
+    // Reaktivieren bei Sichtbarkeitswechsel
+    document.addEventListener('visibilitychange', () => {
+      if (wakeLock !== null && document.visibilityState === 'visible') {
+        requestWakeLock();
+      }
+    });
+
+    setInterval(() => {
+      updateClock();
+      applyDimMode();
+    }, 1000);
+
+    updateClock();
+    applyDimMode();
+    requestWakeLock();
+  </script>
+</body>
+</html>
