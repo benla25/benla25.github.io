@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Matrix</title>
+    <style>
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            margin: 0;
+            background: #000;
+            font-family: sans-serif;
+            color: white;
+            user-select: none;
+        }
+
+        #menu {
+            position: fixed;
+            height: calc(100% - 6px);
+            top: 3px;
+            right: 3px;
+            display: flex;
+            justify-content: center;
+            align-items: stretch;
+            background: #222;
+            z-index: 10;
+            padding-left: 10px !important;
+            padding-right: 10px !important;
+            gap: 5px;
+            border-radius: 24px;
+            flex-wrap: wrap;
+            flex-direction: column;
+            z-index: 99999999;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 1px;
+            align-items: stretch;
+            text-align: center;
+            height: 28px;
+            border-radius: 14px;
+        }
+
+        .group {
+            gap: 1px;
+            display: grid;
+        }
+
+        #matrix-scroll {
+            width: calc(100vw - 208px);
+            height: 100vh;
+            overflow: auto;
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-start;
+            background: #000;
+            scrollbar-color: #444 #000;
+            scrollbar-width: thin;
+        }
+
+        #matrix-scroll::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        #matrix-scroll::-webkit-scrollbar-track {
+            background: #000;
+        }
+
+        #matrix-scroll::-webkit-scrollbar-thumb {
+            background-color: #666;
+            border-radius: 5px;
+        }
+
+        #matrix-scroll::-webkit-scrollbar-thumb:hover {
+            background-color: #444;
+        }
+
+        #matrix-scroll.presentation {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+        }
+
+        #matrix.presentation {
+            transform-origin: center center;
+            will-change: transform;
+        }
+
+        #matrix {
+            display: grid;
+            grid-template-columns: repeat(20, 10px);
+            grid-template-rows: repeat(15, 10px);
+            gap: 1px;
+            padding: 10px;
+            background: none;
+            user-select: none;
+            justify-content: start;
+            align-content: start;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 5px;
+            background: radial-gradient(circle at 30% 30%, #222, #000);
+            box-shadow: inset -1px -1px 2px rgba(0, 0, 0, 0.8);
+            cursor: default;
+            z-index: 0;
+        }
+
+        .active {
+            background: radial-gradient(circle at 30% 30%, var(--dot-color, #ff8800), var(--dot-color, #ff8800));
+            box-shadow:
+                0 0 10px var(--dot-color, #ff8800),
+                0 0 20px var(--dot-color, #ff8800),
+                0 0 30px var(--dot-color, #ff8800);
+            z-index: 10000;
+        }
+
+        button {
+            background: #444;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            cursor: default;
+            border-radius: 14px;
+            transition: background 0.2s ease;
+            user-select: none;
+        }
+
+        button:hover {
+            background: #666;
+        }
+
+        .label,
+        .label:hover {
+            background: #444;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            cursor: default;
+            border-radius: 14px;
+        }
+
+        .color-wrapper {
+            position: relative;
+            width: 63px;
+            height: 28px;
+            border-radius: 14px;
+            overflow: hidden;
+            border-bottom-left-radius: 5px !important;
+            border-top-left-radius: 5px !important;
+        }
+
+        input[type="color"] {
+            appearance: none;
+            border: none;
+            width: 63px;
+            height: 28px;
+            cursor: default;
+            background: none;
+            padding: 0;
+        }
+
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+            width: 63px;
+            border-radius: 14px;
+            border-bottom-left-radius: 5px !important;
+            border-top-left-radius: 5px !important;
+        }
+
+        input[type="color"]::-webkit-color-swatch {
+            border: none;
+            width: 63px;
+            border-radius: 14px;
+            border-bottom-left-radius: 5px !important;
+            border-top-left-radius: 5px !important;
+        }
+
+        .text,
+        .text:hover {
+            border-bottom-right-radius: 5px;
+            border-top-right-radius: 5px;
+            cursor: default;
+            background: #444;
+            width: 116px;
+        }
+
+        .inner {
+            border-radius: 5px;
+        }
+
+        .outer {
+            border-radius: 14px;
+            width: 180px;
+        }
+
+        .edit-label,
+        .edit-label:hover {
+            font-family: sans-serif;
+            color: white;
+            background: #444;
+            text-align: center;
+            justify-content: center;
+            align-items: center;
+            height: 28px;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: normal;
+            width: 180px;
+        }
+
+        .select {
+            background: #444;
+            color: white;
+            border-bottom-left-radius: 14px;
+            border-bottom-right-radius: 14px;
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
+            height: 28px;
+            width: 180px;
+            border: none;
+            padding: 5px;
+        }
+
+        .name {
+            background: #444;
+            color: white;
+            border-bottom-left-radius: 14px;
+            border-bottom-right-radius: 14px;
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
+            height: 18px;
+            width: 160px;
+            border: none;
+            padding-left: 10px;
+            padding-right: 10px;
+            padding-top: 5px;
+            padding-bottom: 5px;
+        }
+
+        .right {
+            border-bottom-left-radius: 5px !important;
+            border-top-left-radius: 5px !important;
+        }
+
+        .left {
+            border-bottom-right-radius: 5px !important;
+            border-top-right-radius: 5px !important;
+        }
+
+        .close {
+            border-bottom-right-radius: 5px !important;
+            border-top-right-radius: 5px !important;
+            background: #884444 !important;
+        }
+
+        .close:hover {
+            background: #dd4444 !important;
+        }
+
+        .export {
+            border-bottom-left-radius: 5px !important;
+            border-top-left-radius: 5px !important;
+        }
+
+        hr {
+            width: 180px;
+            margin-top: 0px;
+            margin-bottom: 0px;
+            border: 1px solid #444;
+            border-radius: 1px;
+        }
+
+        .Wasserzeichen {
+            width: auto;
+            height: 16px;
+            margin-top: 2px;
+            margin-left: 4px;
+            user-select: none;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="menu">
+        <div class="group">
+            <div>
+                <button class="edit-label" style="border-bottom-left-radius: 5px; border-bottom-right-radius: 5px;">Spalten: <span id="colCounter">20</span></button>
+            </div>
+            <div class="buttons">
+                <button class="text" style="border-radius: 5px;">Links</button>
+                <button class="inner" onclick="addColumnLeft()" style="width: 31px;">+</button>
+                <button class="inner" onclick="removeColumnLeft()" style="width: 31px;">-</button>
+            </div>
+            <div class="buttons">
+                <button class="text" style="border-top-left-radius: 5px;">Rechts</button>
+                <button class="inner" onclick="addColumn()" style="width: 31px;">+</button>
+                <button class="right" onclick="removeColumn()" style="width: 31px; border-top-right-radius: 5px;">-</button>
+            </div>
+        </div>
+        <div class="group">
+            <div>
+                <button class="edit-label" style="border-bottom-left-radius: 5px; border-bottom-right-radius: 5px;">Zeilen: <span id="rowCounter">15</span></button>
+            </div>
+            <div class="buttons">
+                <button class="text" style="border-radius: 5px;">Oben</button>
+                <button class="inner" onclick="addRowTop()" style="width: 31px;">+</button>
+                <button class="inner" onclick="removeRowTop()" style="width: 31px;">-</button>
+            </div>
+            <div class="buttons">
+                <button class="text" style="border-top-left-radius: 5px;">Unten</button>
+                <button class="inner" onclick="addRow()" style="width: 31px;">+</button>
+                <button class="right" onclick="removeRow()" style="width: 31px; border-top-right-radius: 5px;">-</button>
+            </div>
+        </div>
+        <div style="display: flex; gap: 1px;">
+            <button class="text">Farbe</button>
+            <label style="color:white;">
+                <div class="color-wrapper">
+                    <input type="color" id="colorPicker" value="#ff8800" onchange="setColor(this.value)">
+                </div>
+            </label>
+        </div>
+        <button onclick="startPresentation()" class="outer">Vorführung</button>
+        <div class="buttons">
+            <button class="outer" onclick="document.getElementById('importFile').click()">Importieren</button>
+            <input type="file" id="importFile" accept=".json" style="display:none;">
+        </div>
+
+        <hr>
+        <div style="color: white; font-weight: bold; text-align: center; font-size: 18px;">Download</div>
+        <div class="group">
+            <label for="exportFormat" style="font-weight: bold; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; width: 170px; height: 18px; text-align: center; border-top-left-radius: 14px; border-top-right-radius: 14px; background: #444; justify-content: center; padding: 5px;">Format:</label>
+            <select id="exportFormat" onchange="updateExportOptions()" class="select">
+                <option value="json">JSON (Bearbeitung)</option>
+                <option value="svg">SVG (Vektor)</option>
+                <option value="png">PNG (Bild)</option>
+            </select>
+        </div>
+        <div class="group">
+            <div id="optionBackground" style="background: #444; border-top-left-radius: 14px; border-top-right-radius: 14px; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; height: 14px; padding-top: 5px; padding-bottom: 9px; padding-left: 7px;">
+                <label>
+                    <input type="checkbox" id="includeBackground">Hintergrund
+                </label>
+            </div>
+            <div id="optionInactive" style="background: #444; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-left-radius: 14px; border-bottom-right-radius: 14px; height: 14px; padding-top: 5px; padding-bottom: 9px; padding-left: 7px;">
+                <label>
+                    <input type="checkbox" id="includeInactive">Inaktive Dots
+                </label>
+            </div>
+            <div id="optionColor" style="background: #444; border-radius: 14px; border-bottom-right-radius: 14px; height: 14px; padding-top: 5px; padding-bottom: 9px; padding-left: 7px;">
+                <label>
+                    <input type="checkbox" id="includeColor">Farbe übernehmen
+                </label>
+            </div>
+        </div>
+        <div class="group">
+            <label for="exportFilename" style="font-weight: bold; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; width: 170px; height: 18px; text-align: center; border-top-left-radius: 14px; border-top-right-radius: 14px; background: #444; justify-content: center; padding: 5px;">Dateiname:</label>
+            <input type="text" id="exportFilename" class="name" placeholder="matrix">
+        </div>
+        <div class="export-buttons">
+            <button class="outer" onclick="handleExport()">Exportieren</button>
+        </div>
+        <div style="display: flex; align-items: center; text-align: center; color: #ff8800;">Powered by <img class="Wasserzeichen" src="Schriftzug.png" draggable="false" /></div>
+    </div>
+
+    <div id="matrix-scroll">
+        <div id="matrix"></div>
+    </div>
+
+    <script>
+
+        const matrix = document.getElementById("matrix");
+        const menu = document.getElementById("menu");
+        const scrollBox = document.getElementById("matrix-scroll");
+        const rowCounter = document.getElementById("rowCounter");
+        const colCounter = document.getElementById("colCounter");
+        const colorPicker = document.getElementById("colorPicker");
+
+        let fullMatrix = [];
+        let visibleRows = 15;
+        let visibleCols = 20;
+        let currentColor = "#ff8800";
+        let locked = false;
+        let tapCount = 0;
+        let tapTimer = null;
+        let resizeHandlerAttached = false;
+        let isDragging = false;
+        let dragMode = null;
+        let undoStack = [];
+        let redoStack = [];
+
+        function setColor(val) {
+            currentColor = val;
+            pushState();
+            document.documentElement.style.setProperty("--dot-color", currentColor);
+            localStorage.setItem("matrixColor", currentColor);
+        }
+
+        function loadColor() {
+            const savedColor = localStorage.getItem("matrixColor");
+            if (savedColor) {
+                currentColor = savedColor;
+                colorPicker.value = savedColor;
+                document.documentElement.style.setProperty("--dot-color", currentColor);
+            }
+        }
+
+        function saveMatrixState() {
+            localStorage.setItem("matrixRows", visibleRows);
+            localStorage.setItem("matrixCols", visibleCols);
+            localStorage.setItem("matrixData", JSON.stringify(fullMatrix));
+        }
+
+        function loadMatrixState() {
+            const rows = parseInt(localStorage.getItem("matrixRows"));
+            const cols = parseInt(localStorage.getItem("matrixCols"));
+            const data = JSON.parse(localStorage.getItem("matrixData"));
+            if (rows && cols) {
+                visibleRows = rows;
+                visibleCols = cols;
+            }
+            if (Array.isArray(data)) {
+                fullMatrix = data;
+            }
+        }
+
+        function initMatrix(rows, cols) {
+            for (let y = 0; y < rows; y++) {
+                if (!fullMatrix[y]) fullMatrix[y] = [];
+                for (let x = 0; x < cols; x++) {
+                    if (fullMatrix[y][x] === undefined) fullMatrix[y][x] = false;
+                }
+            }
+        }
+
+        function render() {
+            initMatrix(visibleRows, visibleCols);
+            matrix.style.gridTemplateColumns = `repeat(${visibleCols}, 14px)`;
+            matrix.style.gridTemplateRows = `repeat(${visibleRows}, 14px)`;
+            matrix.innerHTML = "";
+
+            for (let y = 0; y < visibleRows; y++) {
+                for (let x = 0; x < visibleCols; x++) {
+                    const dot = document.createElement("div");
+                    dot.className = "dot";
+                    if (fullMatrix[y][x]) dot.classList.add("active");
+
+                    dot.addEventListener("mousedown", (e) => {
+                        if (locked) return;
+                        e.preventDefault();
+                        isDragging = true;
+                        dragMode = fullMatrix[y][x] ? "deactivate" : "activate";
+                        applyToggle(dot, y, x);
+                    });
+
+                    dot.addEventListener("mouseenter", () => {
+                        if (isDragging && !locked) applyToggle(dot, y, x);
+                    });
+
+                    matrix.appendChild(dot);
+                }
+            }
+
+            rowCounter.textContent = visibleRows;
+            colCounter.textContent = visibleCols;
+            saveMatrixState();
+        }
+
+        window.addEventListener("mouseup", () => {
+            isDragging = false;
+            dragMode = null;
+        });
+
+        function applyToggle(dot, y, x) {
+            const newVal = (dragMode === "activate");
+            if (fullMatrix[y][x] !== newVal) {
+                pushState();
+                fullMatrix[y][x] = newVal;
+                dot.classList.toggle("active", newVal);
+                saveMatrixState();
+            }
+        }
+
+        function pushState() {
+            undoStack.push(JSON.stringify(fullMatrix));
+            redoStack = [];
+        }
+
+        function undo() {
+            if (undoStack.length === 0) return;
+            redoStack.push(JSON.stringify(fullMatrix));
+            fullMatrix = JSON.parse(undoStack.pop());
+            render();
+        }
+
+        function redo() {
+            if (redoStack.length === 0) return;
+            undoStack.push(JSON.stringify(fullMatrix));
+            fullMatrix = JSON.parse(redoStack.pop());
+            render();
+        }
+
+        window.addEventListener("keydown", (e) => {
+            if (locked === false) {
+                if (e.ctrlKey && e.key === "z") {
+                    e.preventDefault();
+                    undo();
+                }
+                if (e.ctrlKey && (e.key === "y" || (e.shiftKey && e.key === "Z"))) {
+                    e.preventDefault();
+                    redo();
+                }
+            }
+        });
+
+        function addColumn() {
+            pushState();
+            for (let y = 0; y < visibleRows; y++) fullMatrix[y].push(false);
+            visibleCols++;
+            render();
+        }
+
+        function removeColumn() {
+            if (visibleCols <= 1) return;
+            pushState();
+            for (let y = 0; y < visibleRows; y++) fullMatrix[y].pop();
+            visibleCols--;
+            render();
+        }
+
+        function addRow() {
+            pushState();
+            fullMatrix.push(new Array(visibleCols).fill(false));
+            visibleRows++;
+            render();
+        }
+
+        function removeRow() {
+            if (visibleRows <= 1) return;
+            pushState();
+            fullMatrix.pop();
+            visibleRows--;
+            render();
+        }
+
+        function addColumnLeft() {
+            pushState();
+            for (let y = 0; y < visibleRows; y++) fullMatrix[y].unshift(false);
+            visibleCols++;
+            render();
+        }
+
+        function removeColumnLeft() {
+            if (visibleCols <= 1) return;
+            pushState();
+            for (let y = 0; y < visibleRows; y++) fullMatrix[y].shift();
+            visibleCols--;
+            render();
+        }
+
+        function addRowTop() {
+            pushState();
+            fullMatrix.unshift(new Array(visibleCols).fill(false));
+            visibleRows++;
+            render();
+        }
+
+        function removeRowTop() {
+            if (visibleRows <= 1) return;
+            pushState();
+            fullMatrix.shift();
+            visibleRows--;
+            render();
+        }
+
+        function computeScale() {
+            const scaleX = window.innerWidth / matrix.scrollWidth;
+            const scaleY = window.innerHeight / matrix.scrollHeight;
+            return Math.min(scaleX, scaleY);
+        }
+
+        function startPresentation() {
+            locked = true;
+            menu.style.display = "none";
+            scrollBox.classList.add("presentation");
+            matrix.classList.add("presentation");
+            matrix.style.transform = `scale(${computeScale()})`;
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+            tapCount = 0;
+            tapTimer = null;
+            document.addEventListener("click", handleTap);
+
+            if (!resizeHandlerAttached) {
+                window.addEventListener("resize", handleResizeInPresentation);
+                resizeHandlerAttached = true;
+            }
+        }
+
+        function handleResizeInPresentation() {
+            if (matrix.classList.contains("presentation")) {
+                matrix.style.transform = `scale(${computeScale()})`;
+            }
+        }
+
+        function handleTap() {
+            tapCount++;
+            if (!tapTimer) {
+                tapTimer = setTimeout(() => {
+                    tapCount = 0;
+                    tapTimer = null;
+                }, 2500);
+            }
+            if (tapCount >= 10) endPresentation();
+        }
+
+        function endPresentation() {
+            locked = false;
+            menu.style.display = "flex";
+            scrollBox.classList.remove("presentation");
+            matrix.classList.remove("presentation");
+            matrix.style.transform = "none";
+            if (document.fullscreenElement) document.exitFullscreen();
+            document.removeEventListener("click", handleTap);
+        }
+
+        function updateExportOptions() {
+            const format = document.getElementById("exportFormat").value;
+            document.getElementById("optionBackground").style.display = (format === "svg" || format === "png") ? "block" : "none";
+            document.getElementById("optionInactive").style.display = (format === "svg" || format === "png") ? "block" : "none";
+            document.getElementById("optionColor").style.display = (format === "json") ? "block" : "none";
+        }
+
+        function handleExport() {
+            const format = document.getElementById("exportFormat").value;
+            const filename = document.getElementById("exportFilename").value.trim() || "matrix";
+            const includeBackground = document.getElementById("includeBackground")?.checked || false;
+            const includeInactive = document.getElementById("includeInactive")?.checked || false;
+            const includeColor = document.getElementById("includeColor")?.checked || false;
+
+            if (format === "json") {
+                exportAsJSON(filename, includeColor);
+            } else if (format === "svg") {
+                exportAsSVG(filename, includeBackground, includeInactive);
+            } else if (format === "png") {
+                exportAsPNG(filename, includeBackground, includeInactive);
+            }
+        }
+
+        function exportAsJSON(filename, includeColor) {
+            const data = {
+                rows: visibleRows,
+                cols: visibleCols,
+                matrix: fullMatrix
+            };
+            if (includeColor) data.color = currentColor;
+            const blob = new Blob([JSON.stringify(data, null, 2)], {
+                type: "application/json"
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = filename + ".json";
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function exportAsSVG(filename, includeBackground, includeInactive) {
+            const svgNS = "http://www.w3.org/2000/svg";
+            const svg = document.createElementNS(svgNS, "svg");
+            const dotSize = 10;
+            const gap = 5;
+            const width = visibleCols * (dotSize + gap);
+            const height = visibleRows * (dotSize + gap);
+            svg.setAttribute("xmlns", svgNS);
+            svg.setAttribute("width", width);
+            svg.setAttribute("height", height);
+            svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+            const defs = document.createElementNS(svgNS, "defs");
+            const gradInactive = document.createElementNS(svgNS, "radialGradient");
+            gradInactive.setAttribute("id", "gradInactive");
+            gradInactive.setAttribute("cx", "30%");
+            gradInactive.setAttribute("cy", "30%");
+            gradInactive.setAttribute("r", "70%");
+            gradInactive.innerHTML = `<stop offset="0%" stop-color="#222"/><stop offset="100%" stop-color="#000"/>`;
+            defs.appendChild(gradInactive);
+            const glow = document.createElementNS(svgNS, "filter");
+            glow.setAttribute("id", "glow");
+            glow.setAttribute("filterUnits", "userSpaceOnUse");
+
+            glow.setAttribute("x", "0");
+            glow.setAttribute("y", "0");
+            glow.setAttribute("width", "100%");
+            glow.setAttribute("height", "100%");
+
+            glow.innerHTML = `
+    <feGaussianBlur stdDeviation="6" result="blur"/>
+    <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+    </feMerge>
+`;
+            defs.appendChild(glow);
+
+            svg.setAttribute("style", "overflow: visible;");
+
+            svg.appendChild(defs);
+            if (includeBackground) {
+                const bg = document.createElementNS(svgNS, "rect");
+                bg.setAttribute("width", width);
+                bg.setAttribute("height", height);
+                bg.setAttribute("fill", "#111");
+                svg.appendChild(bg);
+            }
+            for (let y = 0; y < visibleRows; y++) {
+                for (let x = 0; x < visibleCols; x++) {
+                    const isActive = fullMatrix[y][x];
+                    if (!isActive && !includeInactive) continue;
+                    const cx = x * (dotSize + gap) + dotSize / 2;
+                    const cy = y * (dotSize + gap) + dotSize / 2;
+                    const r = dotSize / 2;
+                    const circle = document.createElementNS(svgNS, "circle");
+                    circle.setAttribute("cx", cx);
+                    circle.setAttribute("cy", cy);
+                    circle.setAttribute("r", r);
+                    if (isActive) {
+                        circle.setAttribute("fill", currentColor);
+                        circle.setAttribute("filter", "url(#glow)");
+                    } else {
+                        circle.setAttribute("fill", "url(#gradInactive)");
+                    }
+                    svg.appendChild(circle);
+                }
+            }
+            const serializer = new XMLSerializer();
+            const svgData = serializer.serializeToString(svg);
+            const blob = new Blob([svgData], {
+                type: "image/svg+xml"
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = filename + ".svg";
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function exportAsPNG(filename, includeBackground, includeInactive) {
+            const dotSize = 10;
+            const gap = 5;
+            const width = visibleCols * (dotSize + gap);
+            const height = visibleRows * (dotSize + gap);
+            const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext("2d");
+            if (includeBackground) {
+                ctx.fillStyle = "#000";
+                ctx.fillRect(0, 0, width, height);
+            }
+            for (let y = 0; y < visibleRows; y++) {
+                for (let x = 0; x < visibleCols; x++) {
+                    const isActive = fullMatrix[y][x];
+                    if (!isActive && !includeInactive) continue;
+                    const cx = x * (dotSize + gap) + dotSize / 2;
+                    const cy = y * (dotSize + gap) + dotSize / 2;
+                    const r = dotSize / 2;
+                    if (isActive) {
+                        ctx.save();
+                        ctx.shadowColor = currentColor;
+                        ctx.shadowBlur = 16;
+                        ctx.shadowOffsetX = 0;
+                        ctx.shadowOffsetY = 0;
+                        ctx.fillStyle = currentColor;
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, r, 0, 2 * Math.PI);
+                        ctx.fill();
+                        ctx.restore();
+                    } else {
+                        const grad = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.3, r * 0.1, cx, cy, r);
+                        grad.addColorStop(0, "#222");
+                        grad.addColorStop(1, "#000");
+                        ctx.fillStyle = grad;
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, r, 0, 2 * Math.PI);
+                        ctx.fill();
+                    }
+                }
+            }
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = filename + ".png";
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+        }
+
+        document.getElementById("importFile").addEventListener("change", function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    const data = JSON.parse(event.target.result);
+                    if (!Array.isArray(data.matrix)) {
+                        alert("Ungültiges Matrix-Format.");
+                        return;
+                    }
+                    if (typeof data.color === "string") {
+                        currentColor = data.color;
+                        colorPicker.value = data.color;
+                        document.documentElement.style.setProperty("--dot-color", data.color);
+                        localStorage.setItem("matrixColor", data.color);
+                    }
+                    fullMatrix = data.matrix;
+                    visibleRows = typeof data.rows === "number" ? data.rows : fullMatrix.length;
+                    visibleCols = typeof data.cols === "number" ? data.cols : fullMatrix[0]?.length || 0;
+                    localStorage.setItem("matrixRows", visibleRows);
+                    localStorage.setItem("matrixCols", visibleCols);
+                    localStorage.setItem("matrixData", JSON.stringify(fullMatrix));
+                    render();
+                } catch (err) {
+                    alert("Fehler beim Importieren: " + err.message);
+                }
+            };
+            reader.readAsText(file);
+        });
+
+        const input = document.getElementById('exportFilename');
+
+        input.addEventListener('input', () => {
+            const text = input.value.trim();
+            document.title = text || "Matrix";
+        });
+
+        loadColor();
+        loadMatrixState();
+        render();
+        updateExportOptions();
+        window.addEventListener("beforeunload", saveMatrixState);
+    </script>
+</body>
+
+</html>
