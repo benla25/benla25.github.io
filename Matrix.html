@@ -5,6 +5,13 @@
     <meta charset="UTF-8" />
     <title>Matrix</title>
     <style>
+        @font-face {
+            font-family: 'Bahnschrift';
+            src: url('https://trsp-nbg.github.io/resources/fonts/Bahnschrift.ttf') format('truetype');
+            font-weight: 100;
+            font-style: normal;
+        }
+
         html,
         body {
             width: 100%;
@@ -15,28 +22,37 @@
         body {
             margin: 0;
             background: #000;
-            font-family: sans-serif;
+            font-family: "Bahnschrift", sans-serif;
             color: white;
             user-select: none;
+            transition: all 0.2s ease;
         }
 
-        #menu {
+        #menu,
+        #menuDownload {
             position: fixed;
-            height: calc(100% - 6px);
-            top: 3px;
-            right: 3px;
+            right: 4px;
             display: flex;
             justify-content: center;
             align-items: stretch;
-            background: #222;
-            z-index: 10;
-            padding-left: 10px !important;
-            padding-right: 10px !important;
-            gap: 5px;
+            background: color-mix(in srgb, var(--dot-color) 20%, black);
+            z-index: 99999999;
+            padding: 10px !important;
+            gap: 8px;
             border-radius: 24px;
             flex-wrap: wrap;
             flex-direction: column;
-            z-index: 99999999;
+			height: calc(50% - 25px);
+        }
+
+        #menu {
+            top: 4px;
+            border-radius: 24px 24px 5px 5px;
+        }
+
+        #menuDownload {
+            bottom: 4px;
+            border-radius: 5px 5px 24px 24px;
         }
 
         .buttons {
@@ -46,6 +62,7 @@
             text-align: center;
             height: 28px;
             border-radius: 14px;
+            width: 180px;
         }
 
         .group {
@@ -61,7 +78,7 @@
             justify-content: flex-start;
             align-items: flex-start;
             background: #000;
-            scrollbar-color: #444 #000;
+            scrollbar-color: color-mix(in srgb, var(--dot-color) 40%, black) #000;
             scrollbar-width: thin;
         }
 
@@ -75,12 +92,12 @@
         }
 
         #matrix-scroll::-webkit-scrollbar-thumb {
-            background-color: #666;
+            background-color: color-mix(in srgb, var(--dot-color) 40%, black);
             border-radius: 5px;
         }
 
         #matrix-scroll::-webkit-scrollbar-thumb:hover {
-            background-color: #444;
+            background-color: color-mix(in srgb, var(--dot-color) 60%, black);
         }
 
         #matrix-scroll.presentation {
@@ -116,23 +133,22 @@
             background: radial-gradient(circle at 30% 30%, #222, #000);
             box-shadow: inset -1px -1px 2px rgba(0, 0, 0, 0.8);
             cursor: default;
-            z-index: 0;
         }
 
         .active {
             background: radial-gradient(circle at 30% 30%, var(--dot-color, #ff8800), var(--dot-color, #ff8800));
-            box-shadow:
-                0 0 10px var(--dot-color, #ff8800),
+            box-shadow: 0 0 10px var(--dot-color, #ff8800),
                 0 0 20px var(--dot-color, #ff8800),
                 0 0 30px var(--dot-color, #ff8800);
-            z-index: 10000;
+			z-index: 9999;
         }
 
         button {
-            background: #444;
+            font-family: "Bahnschrift", sans-serif;
+            background: color-mix(in srgb, var(--dot-color) 40%, black);
             color: white;
             border: none;
-            padding: 6px 12px;
+            padding: 6px 0;
             cursor: default;
             border-radius: 14px;
             transition: background 0.2s ease;
@@ -140,12 +156,12 @@
         }
 
         button:hover {
-            background: #666;
+            background: color-mix(in srgb, var(--dot-color) 60%, black);
         }
 
         .label,
         .label:hover {
-            background: #444;
+            background: color-mix(in srgb, var(--dot-color) 40%, black);
             color: white;
             border: none;
             padding: 6px 12px;
@@ -175,31 +191,46 @@
 
         input[type="color"]::-webkit-color-swatch-wrapper {
             padding: 0;
-            width: 63px;
-            border-radius: 14px;
-            border-bottom-left-radius: 5px !important;
-            border-top-left-radius: 5px !important;
         }
 
         input[type="color"]::-webkit-color-swatch {
             border: none;
-            width: 63px;
-            border-radius: 14px;
-            border-bottom-left-radius: 5px !important;
-            border-top-left-radius: 5px !important;
         }
 
-        .text,
-        .text:hover {
-            border-bottom-right-radius: 5px;
-            border-top-right-radius: 5px;
-            cursor: default;
-            background: #444;
+        .text-center-left,
+        .text-bottom-left,
+        .text-left,
+        .inner,
+        .outer,
+        .right,
+        .left {
+            font-family: "Bahnschrift", sans-serif;
+        }
+
+        .text-center-left,
+        .text-center-left:hover {
+            border-radius: 5px;
+            background: color-mix(in srgb, var(--dot-color) 40%, black);
             width: 116px;
+        }
+
+        .text-bottom-left,
+        .text-bottom-left:hover {
+            border-radius: 5px 5px 5px 14px;
+            background: color-mix(in srgb, var(--dot-color) 40%, black);
+            width: 116px;
+        }
+
+        .text-left,
+        .text-left:hover {
+            width: 116px;
+            background: color-mix(in srgb, var(--dot-color) 40%, black);
+            border-radius: 14px 5px 5px 14px;
         }
 
         .inner {
             border-radius: 5px;
+            width: 31px;
         }
 
         .outer {
@@ -207,28 +238,39 @@
             width: 180px;
         }
 
+        .right {
+            border-radius: 5px 14px 14px 5px;
+            width: 50%;
+        }
+
+        .left {
+            border-radius: 14px 5px 5px 14px !important;
+            width: 50%;
+        }
+
+        .bottom-right {
+            border-radius: 5px 5px 14px 5px;
+            width: 31px;
+        }
+
         .edit-label,
         .edit-label:hover {
-            font-family: sans-serif;
+            background: color-mix(in srgb, var(--dot-color) 40%, black);
             color: white;
-            background: #444;
             text-align: center;
-            justify-content: center;
-            align-items: center;
             height: 28px;
             border-radius: 14px;
             font-size: 14px;
-            font-weight: normal;
             width: 180px;
+            border-bottom-left-radius: 5px;
+            border-bottom-right-radius: 5px;
         }
 
         .select {
-            background: #444;
+            font-family: "Bahnschrift", sans-serif;
+            background: color-mix(in srgb, var(--dot-color) 40%, black);
             color: white;
-            border-bottom-left-radius: 14px;
-            border-bottom-right-radius: 14px;
-            border-top-left-radius: 5px;
-            border-top-right-radius: 5px;
+            border-radius: 5px 5px 14px 14px;
             height: 28px;
             width: 180px;
             border: none;
@@ -236,61 +278,100 @@
         }
 
         .name {
-            background: #444;
+            font-family: "Bahnschrift", sans-serif;
+            background: color-mix(in srgb, var(--dot-color) 40%, black);
             color: white;
+            border-radius: 5px 5px 14px 14px;
+            height: 18px;
+            width: 160px;
+            border: none;
+            padding: 5px 10px;
+        }
+
+        .name::placeholder {
+            color: color-mix(in srgb, var(--dot-color) 60%, white);
+        }
+
+        .checkbox {
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 14px;
+            background: color-mix(in srgb, var(--dot-color) 60%, black);
+            cursor: default;
+            margin: 0px 7px;
+            transition: background 0.2s ease;
+            position: absolute;
+        }
+
+        .checkbox:checked {
+            background: color-mix(in srgb, var(--dot-color) 0%, green);
+        }
+
+        .option-box {
+            background: color-mix(in srgb, var(--dot-color) 40%, black);
+            padding-top: 7px;
+            padding-bottom: 7px;
+            height: 14px;
+        }
+
+        .option-box.round-top {
+            border-top-left-radius: 14px;
+            border-top-right-radius: 14px;
+            border-bottom-left-radius: 5px;
+            border-bottom-right-radius: 5px;
+        }
+
+        .option-box.round-bottom {
             border-bottom-left-radius: 14px;
             border-bottom-right-radius: 14px;
             border-top-left-radius: 5px;
             border-top-right-radius: 5px;
+        }
+
+        .option-box.full-round {
+            border-radius: 14px;
+        }
+
+        .filename-label,
+        .format-label {
+            font-weight: bold;
+            text-align: center;
+            background: color-mix(in srgb, var(--dot-color) 40%, black);
+            padding: 5px;
+            border-top-left-radius: 14px;
+            border-top-right-radius: 14px;
+            border-bottom-left-radius: 5px;
+            border-bottom-right-radius: 5px;
+            width: 170px;
             height: 18px;
-            width: 160px;
-            border: none;
-            padding-left: 10px;
-            padding-right: 10px;
-            padding-top: 5px;
-            padding-bottom: 5px;
         }
 
-        .right {
-            border-bottom-left-radius: 5px !important;
-            border-top-left-radius: 5px !important;
-        }
-
-        .left {
-            border-bottom-right-radius: 5px !important;
-            border-top-right-radius: 5px !important;
-        }
-
-        .close {
-            border-bottom-right-radius: 5px !important;
-            border-top-right-radius: 5px !important;
-            background: #884444 !important;
-        }
-
-        .close:hover {
-            background: #dd4444 !important;
-        }
-
-        .export {
-            border-bottom-left-radius: 5px !important;
-            border-top-left-radius: 5px !important;
-        }
-
-        hr {
-            width: 180px;
-            margin-top: 0px;
-            margin-bottom: 0px;
-            border: 1px solid #444;
-            border-radius: 1px;
+        .powered {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: #ff8800;
         }
 
         .Wasserzeichen {
             width: auto;
             height: 16px;
-            margin-top: 2px;
             margin-left: 4px;
             user-select: none;
             pointer-events: none;
+        }
+
+        h2 {
+            padding: 0;
+            text-align: center;
+            margin: 0;
+        }
+
+        a {
+            transform: translate(30px, -2px);
+            diplay: grid;
+            position: absolute;
         }
     </style>
 </head>
@@ -298,84 +379,87 @@
 <body>
     <div id="menu">
         <div class="group">
-            <div>
-                <button class="edit-label" style="border-bottom-left-radius: 5px; border-bottom-right-radius: 5px;">Spalten: <span id="colCounter">20</span></button>
+            <div><button class="edit-label">Spalten: <span id="colCounter">20</span></button></div>
+            <div class="buttons">
+                <button class="text-center-left">Links</button>
+                <button class="inner" onclick="addColumnLeft()">+</button>
+                <button class="inner" onclick="removeColumnLeft()">-</button>
             </div>
             <div class="buttons">
-                <button class="text" style="border-radius: 5px;">Links</button>
-                <button class="inner" onclick="addColumnLeft()" style="width: 31px;">+</button>
-                <button class="inner" onclick="removeColumnLeft()" style="width: 31px;">-</button>
+                <button class="text-bottom-left">Rechts</button>
+                <button class="inner" onclick="addColumn()">+</button>
+                <button class="bottom-right" onclick="removeColumn()">-</button>
             </div>
-            <div class="buttons">
-                <button class="text" style="border-top-left-radius: 5px;">Rechts</button>
-                <button class="inner" onclick="addColumn()" style="width: 31px;">+</button>
-                <button class="right" onclick="removeColumn()" style="width: 31px; border-top-right-radius: 5px;">-</button>
-            </div>
-        </div>
-        <div class="group">
-            <div>
-                <button class="edit-label" style="border-bottom-left-radius: 5px; border-bottom-right-radius: 5px;">Zeilen: <span id="rowCounter">15</span></button>
-            </div>
-            <div class="buttons">
-                <button class="text" style="border-radius: 5px;">Oben</button>
-                <button class="inner" onclick="addRowTop()" style="width: 31px;">+</button>
-                <button class="inner" onclick="removeRowTop()" style="width: 31px;">-</button>
-            </div>
-            <div class="buttons">
-                <button class="text" style="border-top-left-radius: 5px;">Unten</button>
-                <button class="inner" onclick="addRow()" style="width: 31px;">+</button>
-                <button class="right" onclick="removeRow()" style="width: 31px; border-top-right-radius: 5px;">-</button>
-            </div>
-        </div>
-        <div style="display: flex; gap: 1px;">
-            <button class="text">Farbe</button>
-            <label style="color:white;">
-                <div class="color-wrapper">
-                    <input type="color" id="colorPicker" value="#ff8800" onchange="setColor(this.value)">
-                </div>
-            </label>
-        </div>
-        <button onclick="startPresentation()" class="outer">Vorführung</button>
-        <div class="buttons">
-            <button class="outer" onclick="document.getElementById('importFile').click()">Importieren</button>
-            <input type="file" id="importFile" accept=".json" style="display:none;">
         </div>
 
-        <hr>
-        <div style="color: white; font-weight: bold; text-align: center; font-size: 18px;">Download</div>
         <div class="group">
-            <label for="exportFormat" style="font-weight: bold; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; width: 170px; height: 18px; text-align: center; border-top-left-radius: 14px; border-top-right-radius: 14px; background: #444; justify-content: center; padding: 5px;">Format:</label>
+            <div><button class="edit-label">Zeilen: <span id="rowCounter">15</span></button></div>
+            <div class="buttons">
+                <button class="text-center-left">Oben</button>
+                <button class="inner" onclick="addRowTop()">+</button>
+                <button class="inner" onclick="removeRowTop()">-</button>
+            </div>
+            <div class="buttons">
+                <button class="text-bottom-left">Unten</button>
+                <button class="inner" onclick="addRow()">+</button>
+                <button class="bottom-right" onclick="removeRow()">-</button>
+            </div>
+        </div>
+
+        <div class="buttons">
+            <button class="text-left">Farbe</button>
+            <div class="color-wrapper">
+                <input type="color" id="colorPicker" value="#ff8800" onchange="setColor(this.value)">
+            </div>
+        </div>
+
+        <div class="buttons">
+            <button onclick="startPresentation()" class="left">Vorführung</button>
+            <button class="right" onclick="document.getElementById('importFile').click()">Importieren</button>
+            <input type="file" id="importFile" accept=".json" hidden>
+        </div>
+    </div>
+
+    <div id="menuDownload">
+        <h2>Download</h2>
+        <div class="group">
+            <label for="exportFormat" class="format-label">Format:</label>
             <select id="exportFormat" onchange="updateExportOptions()" class="select">
                 <option value="json">JSON (Bearbeitung)</option>
                 <option value="svg">SVG (Vektor)</option>
                 <option value="png">PNG (Bild)</option>
             </select>
         </div>
+
         <div class="group">
-            <div id="optionBackground" style="background: #444; border-top-left-radius: 14px; border-top-right-radius: 14px; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; height: 14px; padding-top: 5px; padding-bottom: 9px; padding-left: 7px;">
-                <label>
-                    <input type="checkbox" id="includeBackground">Hintergrund
-                </label>
-            </div>
-            <div id="optionInactive" style="background: #444; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-left-radius: 14px; border-bottom-right-radius: 14px; height: 14px; padding-top: 5px; padding-bottom: 9px; padding-left: 7px;">
-                <label>
-                    <input type="checkbox" id="includeInactive">Inaktive Dots
-                </label>
-            </div>
-            <div id="optionColor" style="background: #444; border-radius: 14px; border-bottom-right-radius: 14px; height: 14px; padding-top: 5px; padding-bottom: 9px; padding-left: 7px;">
-                <label>
-                    <input type="checkbox" id="includeColor">Farbe übernehmen
-                </label>
-            </div>
+            <label for="includeBackground" class="option-box round-top" id="optionBackground">
+                <input type="checkbox" class="checkbox" id="includeBackground">
+                <a>Hintergrund</a>
+            </label>
+
+            <label for="includeInactive" class="option-box round-bottom" id="optionInactive">
+                <input type="checkbox" class="checkbox" id="includeInactive">
+                <a>Inaktive Dots</a>
+            </label>
+
+            <label for="includeColor" class="option-box full-round" id="optionColor">
+                <input type="checkbox" class="checkbox" id="includeColor">
+                <a>Farbe übernehmen</a>
+            </label>
         </div>
+
         <div class="group">
-            <label for="exportFilename" style="font-weight: bold; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; width: 170px; height: 18px; text-align: center; border-top-left-radius: 14px; border-top-right-radius: 14px; background: #444; justify-content: center; padding: 5px;">Dateiname:</label>
+            <label for="exportFilename" class="filename-label">Dateiname:</label>
             <input type="text" id="exportFilename" class="name" placeholder="matrix">
         </div>
+
         <div class="export-buttons">
             <button class="outer" onclick="handleExport()">Exportieren</button>
         </div>
-        <div style="display: flex; align-items: center; text-align: center; color: #ff8800;">Powered by <img class="Wasserzeichen" src="Schriftzug.png" draggable="false" /></div>
+
+        <div class="powered">
+            Powered by <img class="Wasserzeichen" src="https://benla25.github.io/Schriftzug.png" draggable="false" />
+        </div>
     </div>
 
     <div id="matrix-scroll">
@@ -383,9 +467,9 @@
     </div>
 
     <script>
-
         const matrix = document.getElementById("matrix");
         const menu = document.getElementById("menu");
+        const menu2 = document.getElementById("menuDownload");
         const scrollBox = document.getElementById("matrix-scroll");
         const rowCounter = document.getElementById("rowCounter");
         const colCounter = document.getElementById("colCounter");
@@ -403,6 +487,10 @@
         let dragMode = null;
         let undoStack = [];
         let redoStack = [];
+
+        document.getElementById("colorPicker").addEventListener("input", (e) => {
+            setColor(e.target.value);
+        });
 
         function setColor(val) {
             currentColor = val;
@@ -597,6 +685,7 @@
         function startPresentation() {
             locked = true;
             menu.style.display = "none";
+            menu2.style.display = "none";
             scrollBox.classList.add("presentation");
             matrix.classList.add("presentation");
             matrix.style.transform = `scale(${computeScale()})`;
@@ -631,6 +720,7 @@
         function endPresentation() {
             locked = false;
             menu.style.display = "flex";
+            menu2.style.display = "flex";
             scrollBox.classList.remove("presentation");
             matrix.classList.remove("presentation");
             matrix.style.transform = "none";
