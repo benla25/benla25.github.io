@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>
+        HTML-Editor
+    </title>
+    <!-- CodeMirror Styles -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/codemirror.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/theme/eclipse.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/theme/dracula.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.css" rel="stylesheet" />
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet">
+    <style>
+		.inter-normal {
+		    font-family: "Inter", sans-serif;
+		    font-optical-sizing: auto;
+		    font-weight: 200;
+		    font-style: normal;
+		}
+		
+		.roboto-mono-normal {
+		    font-family: "Roboto Mono", monospace;
+		    font-optical-sizing: auto;
+		    font-weight: 200;
+		    font-style: normal;
+		}
+		
+        body {
+            margin: 0;
+            display: flex;
+			flex-direction: column;
+            gap: 5px;
+            padding: 5px;
+            height: 100vh;
+            font-family: "Inter", sans-serif;
+            background: #000;
+            color: #fff;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+		
+		.tabs {
+			height: 30px;
+			gap: 5px;
+			display: flex;
+			overflow-x: hidden;
+			overflow-y: hidden;
+		}
+		
+		#tabBar {
+			height: 30px;
+			width: calc(100% - 35px);
+			gap: 5px;
+			display: flex;
+			overflow-x: auto;
+			overflow-y: hidden;
+		    scrollbar-width: none;      /* Firefox: Scrollbar ausblenden */
+		}
+
+		#tabBar::-webkit-scrollbar {
+		    display: none;              /* Chrome, Safari, Edge: Scrollbar ausblenden */
+		}
+		
+		.htmleditor {
+			height: calc(100% - 35px);
+			width: 100%;
+			display: flex;
+			gap: 5px;
+		}
+
+        #preview {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            background: #000;
+            border-radius: 10px;
+            padding: 0;
+            height: 100%;
+        }
+
+        #previewFrame {
+            width: 100%;
+            border: none;
+            border-radius: 10px;
+            background: #fff;
+            height: 100%;
+        }
+
+        #editorWrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+			width: 50%;
+        }
+
+        .CodeMirror,
+        #bar {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        #bar {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 0;
+            height: 95px;
+        }
+
+        .section1,
+        .section2 {
+            display: flex;
+            gap: 5px;
+            height: 40px;
+        }
+
+        .section1 button,
+        .section1 label.uploadBtn {
+            width: calc(100%/4);
+            height: 40px;
+            border-radius: 10px;
+            border: none;
+            background: #fff;
+            color: #000;
+            user-select: none;
+			cursor: default;
+            font-size: 14px;
+			font-family: "Inter", sans-serif;
+			padding-top: 0px;
+			padding-bottom: 0px;
+        }
+
+        .section2 button {
+            width: calc(100%/3);
+            height: 40px !important;
+            border-radius: 10px;
+            border: none;
+            background: #fff;
+            color: #000;
+            font-size: 14px;
+			font-family: "Inter", sans-serif;
+			padding-top: 0px;
+			padding-bottom: 0px;
+			user-select: none;
+			cursor: default;
+        }
+
+        #nameField {
+            width: calc(50% - 10px) !important;
+            border-radius: 10px;
+            border: none;
+            padding-left: 10px;
+			padding-top: 0px;
+			padding-bottom: 0px;
+			font-family: "Inter", sans-serif;
+			height: 40px !important;
+        }
+
+        #fileUpload {
+            display: none;
+        }
+
+        #uploadLabel {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #fff;
+			user-select: none;
+			cursor: default;
+        }
+
+        #uploadLabel:hover {
+            background: #e7e7e7;
+        }
+		
+		.tab {
+			border-radius: 10px;
+			padding: 0px 10px;
+			height: 30px;
+			vertical-align: center;
+			display: flex;
+			align-items: center;
+			box-sizing: border-box;
+			user-select: none;
+			border: none;
+			background: white;
+			color: black;
+		}
+		
+		.tab.active {
+			border-bottom: 3px solid green;
+		}
+		
+		.close-btn {
+			padding-left: 10px;
+		}
+		
+		#newTabBtn {
+			border: none;
+			border-radius: 10px;
+			text-align: center;
+			align-items: center;
+			height: 30px;
+			width: 30px;
+			user-select: none;
+		}
+
+        .CodeMirror {
+            height: 100%;
+            border-radius: 10px;
+            border: none;
+            font-family: "Roboto Mono", monospace;
+            font-size: 12px;
+			line-height: 1.4;
+        }
+
+        body.dark #bar button,
+        body.dark #bar input,
+        body.dark #bar label.uploadBtn,
+		body.dark #newTabBtn,
+		body.dark .tab {
+            background: #282a36;
+            color: #fff;
+        }
+		
+		/* Scrollbar für CodeMirror Editor */
+		.CodeMirror-scroll::-webkit-scrollbar {
+			width: 12px;
+			height: 12px;
+		}
+		.CodeMirror-scroll::-webkit-scrollbar-track {
+			background: #ffffff;
+		}
+		body.dark .CodeMirror-scroll::-webkit-scrollbar-track {
+			background: #282a36;
+		}
+		.CodeMirror-scroll::-webkit-scrollbar-thumb {
+			background-color: #888;
+			border-radius: 6px;
+			border: 3px solid #ffffff;
+		}
+		body.dark .CodeMirror-scroll::-webkit-scrollbar-thumb {
+			background-color: #555;
+			border: 3px solid #282a36;
+		}
+		/* Chrome, Edge, Safari */
+		.CodeMirror-scrollbar-filler {
+			color: #ffffff; /* Hellmodus */
+		}
+		body.dark .CodeMirror-scrollbar-filler {
+			background-color: #282a36;
+		}
+
+		/* Firefox Scrollbar */
+		body.dark {
+			scrollbar-width: thin;
+			scrollbar-color: #555 #282a36;
+		}
+		body:not(.dark) {
+			scrollbar-width: thin;
+			scrollbar-color: #888 #ffffff;
+		}
+
+        .cm-changed-line {
+            background: rgba(255, 255, 0, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+	<div class="tabs">
+	<button id="newTabBtn">+</button>
+	<div id="tabBar" style="display:flex; gap:5px; margin-bottom:5px;"></div>
+	</div>
+	<div class="htmleditor">
+    <div id="preview">
+        <iframe id="previewFrame">
+        </iframe>
+        <div id="bar">
+            <div class="section1">
+                <label class="uploadBtn" for="fileUpload" id="uploadLabel">
+                    Upload
+                </label>
+                <input id="nameField" placeholder="index.html" type="text" />
+                <button id="downloadBtn">
+                    Download
+                </button>
+            </div>
+            <div class="section2">
+                <button id="formatBtn">
+                    Formatieren
+                </button>
+                <input id="fileUpload" type="file" />
+                <button id="darkToggle">
+                    Dark-Mode
+                </button>
+                <button id="wrapToggle">
+                    Zeilenumbruch: an
+                </button>
+            </div>
+        </div>
+    </div>
+    <div id="editorWrap">
+        <textarea id="editor"></textarea>
+    </div>
+	</div>
+    <!-- CodeMirror -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/codemirror.min.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/mode/htmlmixed/htmlmixed.min.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/mode/xml/xml.min.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/addon/edit/closebrackets.min.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/addon/edit/matchbrackets.min.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/xml-hint.min.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/html-hint.min.js">
+    </script>
+    <!-- Pyodide -->
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js">
+    </script>
+    <script>
+        let pyodideReady = false;
+        let pyodide = null;
+
+        async function loadPyodideAndPackages() {
+            pyodide = await loadPyodide();
+            await pyodide.loadPackage('beautifulsoup4');
+            pyodideReady = true;
+        }
+        loadPyodideAndPackages();
+
+        const editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
+            mode: 'htmlmixed',
+            lineNumbers: true,
+            tabSize: 4,
+            indentUnit: 4,
+            indentWithTabs: false,
+            autoCloseBrackets: false,
+            matchBrackets: true,
+            lineWrapping: true,
+            theme: 'eclipse',
+            smartIndent: false,
+            electricChars: false
+        });
+
+        const iframe = document.getElementById('previewFrame');
+        const nameField = document.getElementById("nameField");
+
+        // LocalStorage Laden
+        const savedContent = localStorage.getItem("editorContent");
+        const savedName = localStorage.getItem("editorFileName");
+        const savedDark = localStorage.getItem("editorDarkMode");
+		
+		window.addEventListener("load", () => {
+			const savedName = localStorage.getItem("editorFileName");
+			if (savedName) {
+				nameField.value = savedName;
+				document.title = savedName + " – HTML Editor";
+			}
+
+			const savedContent = localStorage.getItem("editorContent");
+			if (savedContent) editor.setValue(savedContent);
+		});
+
+        if (savedContent) editor.setValue(savedContent);
+        else editor.setValue(`<!DOCTYPE html>
+<html lang="de">
+<head>
+	<title>Test</title>
+	<style>
+		body {
+			font-family: sans-serif;
+			text-align: center;
+		} 
+	</style>
+</head>
+<body>
+	<p>Hello world!</p>
+</body>
+</html>`);
+
+        if (savedName) nameField.value = savedName;
+        if (savedDark === "true") {
+            document.body.classList.add("dark");
+            editor.setOption("theme", "dracula");
+        }
+
+        function updatePreview() {
+            iframe.srcdoc = editor.getValue();
+        }
+        editor.on('change', () => {
+            updatePreview();
+            localStorage.setItem("editorContent", editor.getValue());
+        });
+        updatePreview();
+
+        // Dateiname speichern
+		nameField.addEventListener("input", () => {
+			const newName = nameField.value.trim();
+			localStorage.setItem("editorFileName", newName);
+			document.title = newName + " – HTML Editor"; // Tabname aktualisieren
+		});
+
+        // Download
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            const blob = new Blob([editor.getValue()], {
+                type: 'text/html'
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = nameField.value || "index.html";
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        // Upload
+        document.getElementById('fileUpload').addEventListener('change', async e => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const text = await file.text();
+            editor.setValue(text);
+            localStorage.setItem("editorContent", text);
+            nameField.value = file.name;
+            localStorage.setItem("editorFileName", file.name);
+			document.title = file.name + " – HTML Editor";
+        });
+
+        // Darkmode
+        document.getElementById('darkToggle').addEventListener('click', () => {
+            const dark = document.body.classList.toggle('dark');
+            editor.setOption('theme', dark ? 'dracula' : 'eclipse');
+            localStorage.setItem("editorDarkMode", dark);
+        });
+
+        // Zeilenumbruch Toggle
+        const wrapToggle = document.getElementById('wrapToggle');
+        wrapToggle.addEventListener('click', () => {
+            const wrap = editor.getOption('lineWrapping');
+            editor.setOption('lineWrapping', !wrap);
+            wrapToggle.textContent = "Zeilenumbruch: " + (!wrap ? "an" : "aus");
+        });
+
+// FORMATIEREN BUTTON
+document.getElementById("formatBtn").addEventListener("click", async () => {
+	if (!     pyodideReady) { 
+		alert("Python lädt noch…"); 
+		return; 
+	}
+
+	let code = editor.getValue();
+
+	pyodide.globals.set("html_code", code);
+	let formattedHtml = await pyodide.runPythonAsync(`
+from bs4 import BeautifulSoup
+import re
+
+INDENT = 4
+
+def format_css(css, base_depth=0):
+	css = css.strip()
+	css = re.sub(r'\\s+', ' ', css)
+	rules = [r.   strip() for r in css.split('}') if r.strip()]
+	blocks = []
+	for rule in rules:
+		if '{' not in rule:
+			continue
+		selector, props = rule.split('{', 1)
+		selector = selector.strip()
+		props = props.strip('; ').strip()
+		properties = [p.strip() for p in props.split(';') if p. strip()]
+		props_lines = "\\n".join((" " * (INDENT * (base_depth + 1))) + p + ";" for p in properties)
+		block = (
+			(" " * (INDENT * base_depth)) + f"{selector} {{" + "\\n" +
+			props_lines + "\\n" +
+			(" " * (INDENT * base_depth)) + "}"
+		)
+		blocks.append(block)
+	return "\\n".join(blocks) + "\\n"
+
+def format_javascript(js_text, base_depth=0):
+	if not js_text or not js_text.strip():
+		return ""
+	
+	lines = js_text.split('\\n')
+	base_indent = " " * (INDENT * (base_depth + 1))
+	formatted_lines = []
+	current_indent = 0
+	
+	for line in lines:
+		stripped = line.strip()
+		
+		if not stripped:
+			formatted_lines.append("")
+			continue
+		
+		# Decrease indent if line STARTS with closing brace
+		if stripped.startswith('}'):
+			current_indent = max(0, current_indent - 1)
+		
+		# Add line with current indentation
+		indent_str = base_indent + (" " * (INDENT * current_indent))
+		formatted_lines.append(indent_str + stripped)
+		
+		# Count braces to determine indent change
+		# Only count { } for indent, not ( ) in function calls
+		open_braces = stripped.count('{')
+		close_braces = stripped.count('}')
+		
+		# Nur Indent ändern wenn die Zeile mit { ENDET (nicht nur { enthält)
+		# und nur wenn die Zeile mit } ENDET (nicht nur } enthält)
+		if stripped.endswith('{'):
+			current_indent += 1
+		elif stripped.endswith('}'):
+			# Indent bleibt gleich - bereits am Anfang reduziert
+			pass
+		else:
+			# Für andere Zeilen: zähle alle { und }
+			current_indent += open_braces - close_braces
+		
+		current_indent = max(0, current_indent)
+	
+	return "\\n".join(formatted_lines) + "\\n"
+
+# Extract DOCTYPE from original code
+doctype = None
+lines_list = html_code.split('\\n')
+for line in lines_list:
+	if line.strip().lower().startswith('<!doctype'):
+		doctype = line.strip()
+		break
+
+soup = BeautifulSoup(html_code, "html.parser")
+
+# Store original script contents before beautification
+script_contents = {}
+for i, script_tag in enumerate(soup.find_all('script')):
+	script_contents[i] = script_tag.string
+
+# Text in <title> und <p> auf eigene Zeilen
+for tag in soup.find_all(['title', 'p']):
+	if tag.string and isinstance(tag.string, str):
+		text = tag.string.strip()
+		tag.string. replace_with("\\n" + text + "\\n")
+
+# CSS in <style> formatieren
+for style_tag in soup.find_all('style'):
+	css_text = style_tag.string or ''
+	if css_text. strip():
+		style_tag. string = "\\n" + format_css(css_text. strip(), base_depth=3) + "\\n"
+
+# Format and restore JavaScript in <script>
+for i, script_tag in enumerate(soup.find_all('script')):
+	if i in script_contents:
+		script_text = script_contents[i]
+		if script_text and script_text. strip():
+			formatted_script = format_javascript(script_text, base_depth=2)
+			script_tag.string = "\\n" + formatted_script + "\\n"
+
+# Custom formatter with proper indent rules
+def format_html_custom(soup):
+	lines = []
+	indent_level = 0
+	
+	def process_node(node):
+		nonlocal indent_level
+
+		# Kommentare direkt übernehmen
+		from bs4 import Comment
+		if isinstance(node, Comment):
+			lines.append(" " * (INDENT * indent_level) + "<!--" + str(node) + "-->")
+			return
+
+		if isinstance(node, str):
+			text = node.strip()
+			if text:
+				lines.append(" " * (INDENT * indent_level) + text)
+			return
+
+		tag_str = "<" + node.name
+		if node.attrs:
+			for key, value in node.attrs.items():
+				if isinstance(value, list):
+					value = " ".join(value)
+				tag_str += f' {key}="{value}"'
+
+		# Self-closing
+		if node.name in ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
+						 'link', 'meta', 'source', 'track', 'wbr']:
+			tag_str += " />"
+			lines.append(" " * (INDENT * indent_level) + tag_str)
+		else:
+			tag_str += ">"
+			lines.append(" " * (INDENT * indent_level) + tag_str)
+			indent_level += 1
+
+			for child in node.children:
+				process_node(child)
+
+			indent_level -= 1
+			lines.append(" " * (INDENT * indent_level) + "</" + node.name + ">")
+	
+	# Find the html tag and process only its children
+	html_tag = soup.find('html')
+	if html_tag:
+		# Print opening html tag
+		tag_str = "<html"
+		if html_tag.attrs:
+			for key, value in html_tag.attrs.items():
+				if isinstance(value, list):
+					value = " ".join(value)
+				tag_str += f' {key}="{value}"'
+		tag_str += ">"
+		lines.append(tag_str)
+		indent_level = 1
+		
+		# Process children of html tag
+		for child in html_tag.children:
+			process_node(child)
+		
+		# Close html tag
+		lines.append("</html>")
+	else:
+		# Fallback if no html tag found
+		for child in soup.children:
+			process_node(child)
+	
+	return "\\n". join(lines)
+
+formatted = format_html_custom(soup)
+
+# Add DOCTYPE back at the beginning
+if doctype:
+	out = doctype + "\\n" + formatted
+else:
+	out = formatted
+
+out
+	`);
+
+	editor.setValue(formattedHtml);
+});
+				
+        // ENTER — FIX für gleiche Einrückung wie Zeile darüber
+		editor.setOption("extraKeys", {
+			"Ctrl-Space": "autocomplete",
+			"Enter": function(cm) {
+				const cur = cm.getCursor();
+				const line = cm.getLine(cur.line);
+
+				const indentAbove = line.match(/^\s*/)[0];
+				const before = line.slice(0, cur.ch);
+				const after = line.slice(cur.ch);
+
+				// HTML-Tag-Erkennung
+				const openTag = before.match(/<([a-zA-Z0-9]+)([^>]*)>$/);
+				const closeTag = after.match(/^<\/([a-zA-Z0-9]+)>/);
+				const voidTags = ["area","base","br","col","embed","hr","img","input","link","meta","source","track","wbr"];
+				
+				// Klammern-Erkennung
+				const openBrace   = before.match(/\{$/);
+				const closeBrace  = after.match(/^\}/);
+
+				const openParen   = before.match(/\($/);
+				const closeParen  = after.match(/^\)/);
+
+				const openBracket = before.match(/\[$/);
+				const closeBracket= after.match(/^\]/);
+
+				// Fall 1: Cursor genau zwischen <tag>|</tag>
+				if (openTag && closeTag && !voidTags.includes(openTag[1])) {
+					cm.replaceRange("\n" + indentAbove + "    \n" + indentAbove, cur, cur);
+					cm.setCursor({ line: cur.line + 1, ch: indentAbove.length + 4 });
+					return;
+				}
+
+				// Fall 2: Nur öffnender Tag
+				if (openTag && !voidTags.includes(openTag[1])) {
+					cm.replaceRange("\n" + indentAbove + "    ", cur, cur);
+					cm.setCursor({ line: cur.line + 1, ch: indentAbove.length + 4 });
+					return;
+				}
+
+				// Fall 3: Cursor zwischen { | }
+				if (openBrace && closeBrace) {
+					cm.replaceRange("\n" + indentAbove + "    \n" + indentAbove, cur, cur);
+					cm.setCursor({ line: cur.line + 1, ch: indentAbove.length + 4 });
+					return;
+				}
+
+				// Fall 4: Nur öffnende {
+				if (openBrace) {
+					cm.replaceRange("\n" + indentAbove + "    ", cur, cur);
+					cm.setCursor({ line: cur.line + 1, ch: indentAbove.length + 4 });
+					return;
+				}
+
+				// Fall 5: Cursor zwischen ( | )
+				if (openParen && closeParen) {
+					cm.replaceRange("\n" + indentAbove + "    \n" + indentAbove, cur, cur);
+					cm.setCursor({ line: cur.line + 1, ch: indentAbove.length + 4 });
+					return;
+				}
+
+				// Fall 6: Nur öffnende (
+				if (openParen) {
+					cm.replaceRange("\n" + indentAbove + "    ", cur, cur);
+					cm.setCursor({ line: cur.line + 1, ch: indentAbove.length + 4 });
+					return;
+				}
+
+				// Fall 7: Cursor zwischen [ | ]
+				if (openBracket && closeBracket) {
+					cm.replaceRange("\n" + indentAbove + "    \n" + indentAbove, cur, cur);
+					cm.setCursor({ line: cur.line + 1, ch: indentAbove.length + 4 });
+					return;
+				}
+
+				// Fall 8: Nur öffnende [
+				if (openBracket) {
+					cm.replaceRange("\n" + indentAbove + "    ", cur, cur);
+					cm.setCursor({ line: cur.line + 1, ch: indentAbove.length + 4 });
+					return;
+				}
+
+				// Standard: gleiche Einrückung wie Zeile darüber
+				cm.replaceRange("\n" + indentAbove, cur, cur);
+				cm.setCursor({ line: cur.line + 1, ch: indentAbove.length });
+			}
+		});
+
+        // Auto-Vervollständigung von </tag>
+		editor.on('inputRead', (cm, change) => {
+			const cur = cm.getCursor();
+
+			// Fall 1: HTML-Tag mit >
+			if (change.text[0] === '>') {
+				const line = cm.getLine(cur.line);
+				const match = line.slice(0, cur.ch).match(/<([a-zA-Z0-9]+)([^>]*)>$/);
+				if (match) {
+					const tag = match[1];
+					const voidTags = ['area','base','br','col','embed','hr','img','input','link','meta','source','track','wbr'];
+					if (!voidTags.includes(tag)) {
+						cm.replaceRange(`</${tag}>`, cur);
+						cm.setCursor({ line: cur.line, ch: cur.ch });
+					}
+				}
+			}
+
+			// Fall 2: Auto-Vervollständigung für Klammern
+			if (change.text[0] === '{') {
+				cm.replaceRange('}', cur);
+				cm.setCursor({ line: cur.line, ch: cur.ch });
+			}
+			if (change.text[0] === '[') {
+				cm.replaceRange(']', cur);
+				cm.setCursor({ line: cur.line, ch: cur.ch });
+			}
+			if (change.text[0] === '(') {
+				cm.replaceRange(')', cur);
+				cm.setCursor({ line: cur.line, ch: cur.ch });
+			}
+		});
+		
+// --- Tab Management ---
+let tabs = {}; // { tabId: {name, content} }
+let activeTab = null;
+let tabCounter = 0;
+
+const tabBar = document.getElementById("tabBar");
+const newTabBtn = document.getElementById("newTabBtn");
+
+function renderTabs() {
+    tabBar.innerHTML = "";
+    for (const id in tabs) {
+        const tab = document.createElement("div");
+        tab.classList.add("tab");
+		tab.classList.toggle("active", id === activeTab);
+        if (id === activeTab) tab.classList.add("active");
+
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = tabs[id].name;
+        nameSpan.addEventListener("click", () => switchTab(id));
+        tab.appendChild(nameSpan);
+
+        const closeBtn = document.createElement("span");
+        closeBtn.textContent = "✕";
+        closeBtn.classList.add("close-btn");
+        closeBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            closeTab(id);
+        });
+        tab.appendChild(closeBtn);
+
+        tabBar.appendChild(tab);
+    }
+}
+
+function saveCurrentTab() {
+    if (activeTab && tabs[activeTab]) {
+        tabs[activeTab].content = editor.getValue();
+        tabs[activeTab].name = nameField.value;
+        localStorage.setItem("editorTabs", JSON.stringify(tabs));
+    }
+}
+
+function switchTab(id) {
+    if (!tabs[id]) return;
+    saveCurrentTab(); // Aktuellen Tab speichern
+    activeTab = id;
+    editor.setValue(tabs[id].content);
+    nameField.value = tabs[id].name;
+    document.title = tabs[id].name + " – HTML Editor";
+    localStorage.setItem("activeTabId", activeTab);
+    renderTabs();
+}
+
+function closeTab(id) {
+    if (!tabs[id]) return;
+    if (id === activeTab) {
+        const keys = Object.keys(tabs).filter(k => k !== id);
+        delete tabs[id];
+        if (keys.length > 0) {
+            switchTab(keys[0]);
+        } else {
+            activeTab = null;
+            createNewTab();
+        }
+    } else {
+        delete tabs[id];
+    }
+    localStorage.setItem("editorTabs", JSON.stringify(tabs));
+    localStorage.setItem("activeTabId", activeTab);
+    renderTabs();
+}
+
+function createNewTab(name = "index.html", content = "") {
+    saveCurrentTab();
+    // ID garantieren, dass sie noch nicht existiert
+    let id;
+    do {
+        id = "tab" + tabCounter++;
+    } while (tabs[id]);
+    tabs[id] = { name, content };
+    switchTab(id);
+}
+
+// Editor-Change speichern
+editor.on("change", () => {
+    if (!activeTab) return;
+    tabs[activeTab].content = editor.getValue();
+    localStorage.setItem("editorTabs", JSON.stringify(tabs));
+});
+
+// NameField speichern
+nameField.addEventListener("input", () => {
+    if (!activeTab) return;
+    tabs[activeTab].name = nameField.value;
+    document.title = nameField.value + " – HTML Editor";
+    renderTabs();
+    localStorage.setItem("editorTabs", JSON.stringify(tabs));
+});
+
+// Neue Datei Button
+newTabBtn.addEventListener("click", () => createNewTab());
+
+// Tabs wiederherstellen
+window.addEventListener("load", () => {
+    const savedTabs = localStorage.getItem("editorTabs");
+    const savedActive = localStorage.getItem("activeTabId");
+    if (savedTabs) {
+        tabs = JSON.parse(savedTabs);
+
+        // Sicherstellen, dass tabCounter höher ist als existierende IDs
+        const maxId = Object.keys(tabs)
+            .map(id => parseInt(id.replace("tab", "")))
+            .reduce((a, b) => Math.max(a, b), -1);
+        tabCounter = maxId + 1;
+
+        if (savedActive && tabs[savedActive]) {
+            switchTab(savedActive);
+        } else {
+            const firstTabId = Object.keys(tabs)[0];
+            switchTab(firstTabId);
+        }
+    } else {
+        createNewTab();
+    }
+});
+    </script>
+</body>
+
+</html>
