@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>ID-Generator</title>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            background: #111;
+            color: #eee;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 40px 10px;
+            overflow: hidden;
+        }
+        .container {
+            background: #1b1b1b;
+            border-radius: 12px;
+            padding: 20px 24px;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        }
+        h1 {
+            font-size: 20px;
+            margin: 0 0 16px;
+        }
+        .row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: space-between;
+        }
+        label {
+            font-size: 14px;
+            width: 100%;
+        }
+        input[type="number"] {
+            width: 18px;
+            height: 20px;
+            border-radius: 6px;
+            padding-right: 4px;
+            border: 1px solid #444;
+            margin-top: 2px;
+            background: #111;
+            color: #eee;
+            text-align: right;
+            font-size: 14px;
+            align-items: center;
+        }
+        input[type="checkbox"] {
+            transform: scale(1.1);
+            cursor: pointer;
+        }
+        button {
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: none;
+            background: #3b82f6;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        .output {
+            margin-top: 14px;
+            padding: 10px;
+            border-radius: 8px;
+            background: #0b0b0b;
+            font-family: "SF Mono", ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            word-break: break-all;
+            font-size: 14px;
+            min-height: 17px;
+        }
+        .error {
+            color: #f97373;
+            font-size: 13px;
+            margin-top: 6px;
+        }
+        .group-title {
+            font-size: 13px;
+            opacity: 0.8;
+            margin-top: 4px;
+            margin-bottom: 2px;
+        }
+        .checkboxes {
+            display: flex;
+            flex-direction: column;
+            gap: 4px 10px;
+            justify-content: left;
+            text-align: left;
+        }
+        
+        .no-spin::-webkit-outer-spin-button,
+        .no-spin::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .no-spin {
+            -moz-appearance: textfield;
+        }
+
+        .no-spin {
+            appearance: textfield;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>ID-Generator</h1>
+
+    <div class="group-title">Zeichengruppen:</div>
+    <div class="checkboxes">
+        <div class="row">
+        	<label><input type="checkbox" id="upper" checked> Großbuchstaben</label>
+        	<label><input type="checkbox" id="lower" checked> Kleinbuchstaben</label>
+        </div>
+        <div class="row">
+            <label><input type="checkbox" id="digits" checked> Zahlen</label>
+        	<label><input type="checkbox" id="symbols"> Sonderzeichen</label>
+        </div>
+    </div>
+
+    <div class="group-title">Einstellungen:</div>
+    <div class="row">
+        <label><input type="checkbox" id="unique"> Doppelte Zeichen vermeiden</label>
+    </div>
+    <div class="row">
+        <label><input type="checkbox" id="avoidRepeats"> Gleiche Zeichen nebeneinander vermeiden</label>
+    </div>
+
+    <div style="margin-left: 24px">
+        <label for="length">Länge:</label>
+        <input type="number" class="no-spin" id="length" min="4" max="99" value="16">
+    </div>
+
+    <button id="generateBtn">ID generieren</button>
+
+    <div id="error" class="error"></div>
+    <div id="output" class="output"></div>
+</div>
+
+<script>
+    
+    function getMaxLength() {
+        let max = 0;
+
+        if (upperInput.checked) max += 26;
+        if (lowerInput.checked) max += 26;
+        if (digitsInput.checked) max += 10;
+        if (symbolsInput.checked) max += 26;
+
+        return max;
+    }
+    
+    function enforceLengthLimit() {
+        if (!uniqueInput.checked) return; // nur bei uniqueChars begrenzen
+
+        const max = getMaxLength();
+        const current = parseInt(lengthInput.value, 10);
+
+        if (current > max) {
+            lengthInput.value = max;
+        }
+    }
+    
+    function generateID(options) {
+        const {
+            length = 16,
+            useUppercase = true,
+            useLowercase = true,
+            useNumbers = true,
+            useSymbols = true,
+            uniqueChars = false,
+            avoidRepeats = false
+        } = options;
+
+        let pool = "";
+
+        if (useUppercase) pool += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        if (useLowercase) pool += "abcdefghijklmnopqrstuvwxyz";
+        if (useNumbers)   pool += "1234567890";
+        if (useSymbols)   pool += "!@#$%^&*()-_=+[]{};:,.<>/?";
+
+        if (pool.length === 0) {
+            throw new Error("Bitte mindestens eine Zeichengruppe auswählen.");
+        }
+
+        if (uniqueChars && length > pool.length) {
+            throw new Error("Maximale Länge bei einzigartigen Zeichen: " + pool.length);
+        }
+
+        function isRepeat(a, b) {
+            if (!a || !b) return false;
+            return a.toLowerCase() === b.toLowerCase();
+        }
+
+        function hasRepeat(str) {
+            for (let i = 0; i < str.length - 1; i++) {
+                if (isRepeat(str[i], str[i + 1])) return true;
+            }
+            return false;
+        }
+
+        function generateOnce() {
+            if (uniqueChars) {
+                const arr = pool.split("");
+                for (let i = arr.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [arr[i], arr[j]] = [arr[j], arr[i]];
+                }
+                return arr.slice(0, length).join("");
+            }
+
+            let result = "";
+            for (let i = 0; i < length; i++) {
+                let char;
+                do {
+                    char = pool[Math.floor(Math.random() * pool.length)];
+                } while (avoidRepeats && i > 0 && isRepeat(char, result[i - 1]));
+                result += char;
+            }
+            return result;
+        }
+
+        let id;
+        let attempts = 0;
+
+        do {
+            id = generateOnce();
+            attempts++;
+            if (attempts > 5000) throw new Error("Konnte keine passende ID erzeugen.");
+        } while (avoidRepeats && hasRepeat(id));
+
+        return id;
+    }
+
+    const lengthInput = document.getElementById("length");
+    const upperInput = document.getElementById("upper");
+    const lowerInput = document.getElementById("lower");
+    const digitsInput = document.getElementById("digits");
+    const symbolsInput = document.getElementById("symbols");
+    const uniqueInput = document.getElementById("unique");
+    const avoidRepeatsInput = document.getElementById("avoidRepeats");
+    const outputEl = document.getElementById("output");
+    const errorEl = document.getElementById("error");
+    const btn = document.getElementById("generateBtn");
+    
+    upperInput.addEventListener("change", enforceLengthLimit);
+    lowerInput.addEventListener("change", enforceLengthLimit);
+    digitsInput.addEventListener("change", enforceLengthLimit);
+    symbolsInput.addEventListener("change", enforceLengthLimit);
+    uniqueInput.addEventListener("change", enforceLengthLimit);
+
+    btn.addEventListener("click", () => {
+        errorEl.textContent = "";
+        outputEl.textContent = "";
+
+        const length = parseInt(lengthInput.value, 10);
+        if (isNaN(length) || length <= 0) {
+            errorEl.textContent = "Bitte eine gültige Länge größer als 0 eingeben.";
+            return;
+        }
+
+        if (uniqueInput.checked) {
+            const max = getMaxLength();
+            if (length > max) {
+                errorEl.textContent = "Maximale Länge bei einzigartigen Zeichen: " + max;
+                return;
+            }
+        }
+
+        try {
+            const id = generateID({
+                length,
+                useUppercase: upperInput.checked,
+                useLowercase: lowerInput.checked,
+                useNumbers: digitsInput.checked,
+                useSymbols: symbolsInput.checked,
+                uniqueChars: uniqueInput.checked,
+                avoidRepeats: avoidRepeatsInput.checked
+            });
+            outputEl.textContent = id;
+        } catch (e) {
+            errorEl.textContent = e.message;
+        }
+    });
+</script>
+</body>
+</html>
