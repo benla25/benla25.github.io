@@ -1,6 +1,10 @@
 <!DOCTYPE html>
-<html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Train Data</title>
+
 <style>
 html,body{margin:0;height:100%;background:#000;color:#fff;font-family:Consolas,"Courier New",monospace}
 body{display:flex;align-items:center;justify-content:center}
@@ -10,26 +14,106 @@ body{display:flex;align-items:center;justify-content:center}
 .row{display:flex;align-items:center;gap:1vw}
 .value{font-size:min(8vw,12vh);font-variant-numeric:tabular-nums;white-space:pre}
 .unit{font-size:min(2vw,3vh)}
-.arrow{font-size:min(6vw,9vh);color:#555}.on{color:#0f0;text-shadow:0 0 12px #0f0}
-</style></head><body><div id="wrap">
-<div class="panel"><div class="row"><div id="speed" class="value">000.0</div><div class="unit">km/h</div></div></div>
-<div class="panel"><div class="row"><div id="l" class="arrow">◂</div><div id="lr" class="value">00.0</div><div class="unit">°</div><div id="r" class="arrow">▸</div></div></div>
-<div class="panel"><div class="arrow" id="u" style="margin-bottom:-25px">▴</div><div class="row"><div id="ud" class="value">00.0</div><div class="unit">°</div></div><div class="arrow" id="d" style="margin-top:-25px">▾</div></div>
+.arrow{font-size:min(6vw,9vh);color:#555}
+.on{color:#0f0;text-shadow:0 0 12px #0f0}
+</style>
+</head>
+
+<body>
+<div id="wrap">
+
+    <div class="panel">
+        <div class="row">
+            <div id="speed" class="value">000.0</div>
+            <div class="unit">km/h</div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="row">
+            <div id="l" class="arrow">◂</div>
+            <div id="lr" class="value">00.0</div>
+            <div class="unit">°</div>
+            <div id="r" class="arrow">▸</div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div id="u" class="arrow" style="margin-bottom:-25px">▴</div>
+        <div class="row">
+            <div id="ud" class="value">00.0</div>
+            <div class="unit">°</div>
+        </div>
+        <div id="d" class="arrow" style="margin-top:-25px">▾</div>
+    </div>
+
 </div>
+
 <script>
+/* ---------- Hilfsfunktionen ---------- */
 function fs(v){return v.toFixed(1).padStart(5,"0");}
 function ft(v){return v.toFixed(1).padStart(4,"0");}
-function start(){
-if(navigator.geolocation)navigator.geolocation.watchPosition(p=>{document.getElementById("speed").textContent=fs((p.coords.speed||0)*3.6);},{},{enableHighAccuracy:true});
-addEventListener("deviceorientation",e=>{
-let g=e.gamma||0,b=e.beta||0;
-lr.textContent=ft(Math.abs(g));ud.textContent=ft(Math.abs(b));
-[l,r,u,d].forEach(x=>x.classList.remove("on"));
-if(g<-5)l.classList.add("on"); else if(g>5)r.classList.add("on");
-if(b<-5)u.classList.add("on"); else if(b>5)d.classList.add("on");
-});
+
+/* ---------- DOM-Referenzen ---------- */
+const speedEl = document.getElementById("speed");
+const lrEl = document.getElementById("lr");
+const udEl = document.getElementById("ud");
+const lEl = document.getElementById("l");
+const rEl = document.getElementById("r");
+const uEl = document.getElementById("u");
+const dEl = document.getElementById("d");
+
+/* ---------- Startfunktion ---------- */
+function start() {
+
+    /* Geschwindigkeit */
+    if (navigator.geolocation) {
+        navigator.geolocation.watchPosition(
+            p => {
+                const v = (p.coords.speed || 0) * 3.6;
+                speedEl.textContent = fs(v);
+            },
+            err => console.log(err),
+            { enableHighAccuracy: true }
+        );
+    }
+
+    /* Neigung */
+    addEventListener("deviceorientation", e => {
+        const g = e.gamma || 0;
+        const b = e.beta || 0;
+
+        lrEl.textContent = ft(Math.abs(g));
+        udEl.textContent = ft(Math.abs(b));
+
+        [lEl, rEl, uEl, dEl].forEach(x => x.classList.remove("on"));
+
+        if (g < -5) lEl.classList.add("on");
+        else if (g > 5) rEl.classList.add("on");
+
+        if (b < -5) uEl.classList.add("on");
+        else if (b > 5) dEl.classList.add("on");
+    });
 }
-if(typeof DeviceOrientationEvent!=="undefined"&&DeviceOrientationEvent.requestPermission){
-document.body.onclick=()=>DeviceOrientationEvent.requestPermission().then(s=>{if(s==="granted")start();},{once:true});
-}else start();
-</script></body></html>
+
+/* ---------- iOS Permission ---------- */
+function init() {
+    if (typeof DeviceOrientationEvent !== "undefined" &&
+        typeof DeviceOrientationEvent.requestPermission === "function") {
+
+        document.body.addEventListener("click", () => {
+            DeviceOrientationEvent.requestPermission().then(state => {
+                if (state === "granted") start();
+            });
+        }, { once: true });
+
+    } else {
+        start();
+    }
+}
+
+init();
+</script>
+
+</body>
+</html>
