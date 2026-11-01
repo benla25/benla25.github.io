@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple notepad with LS</title>
+    <style> 
+        body { 
+            background: black; 
+            color: lime; 
+            font-size: 15px; 
+            font-family: "Cascadia Code", monospace; 
+        } 
+        ::selection {
+    		background: lime;
+    		color: black;
+    		text-shadow: 0 0 4px #00ff00;;
+		}
+        #editor {
+            white-space: pre-wrap;
+            outline: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="editor" contenteditable="true" spellcheck="false"></div>
+
+    <script>
+        const editor = document.getElementById("editor");
+
+        const saved = localStorage.getItem("editorContent");
+        if (saved !== null) editor.innerHTML = saved;
+
+        editor.addEventListener("input", () => {
+            localStorage.setItem("editorContent", editor.innerHTML);
+        });
+
+        editor.addEventListener("keydown", (e) => {
+            if (e.key !== "Enter") return;
+
+            const sel = window.getSelection();
+            if (!sel.rangeCount) return;
+
+            const range = sel.getRangeAt(0);
+            const node = range.startContainer;
+
+            let line = node.textContent || "";
+            line = line.trim();
+
+            if (line === "-" || line === "- " || line.match(/^(\d{2})\.$/)) {
+                e.preventDefault();
+                node.textContent = "\n"; 
+                localStorage.setItem("editorContent", editor.innerHTML);
+                return;
+            }
+
+            setTimeout(() => {
+                const sel2 = window.getSelection();
+                if (!sel2.rangeCount) return;
+
+                const range2 = sel2.getRangeAt(0);
+                const node2 = range2.startContainer;
+
+                let prevLine = node.textContent || "";
+                prevLine = prevLine.trim();
+
+                if (prevLine.startsWith("- ")) {
+                    insertAfterCursor("- ");
+                    return;
+                }
+
+                const numMatch = prevLine.match(/^(\d{2})\.\s/);
+                if (numMatch) {
+                    let num = parseInt(numMatch[1], 10) + 1;
+                    const next = String(num).padStart(2, "0") + ". ";
+                    insertAfterCursor(next);
+                    return;
+                }
+
+            }, 0);
+        });
+
+        function insertAfterCursor(text) {
+            const sel = window.getSelection();
+            const range = sel.getRangeAt(0);
+
+            const node = document.createTextNode(text);
+            range.insertNode(node);
+
+            range.setStartAfter(node);
+            range.setEndAfter(node);
+            sel.removeAllRanges();
+            sel.addRange(range);
+
+            localStorage.setItem("editorContent", editor.innerHTML);
+        }
+    </script>
+</body>
+</html>
